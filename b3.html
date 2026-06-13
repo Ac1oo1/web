@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>電子書翻頁效果</title>
+
+<style>
+body{
+    margin:0;
+    background:#eee;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:Arial;
+}
+
+.book{
+    width:421px;
+    height:298px;
+    perspective:1500px;
+    position:relative;
+}
+
+.page{
+    position:absolute;
+    width:100%;
+    height:100%;
+    transform-origin:left center;
+    transition:transform 0.8s;
+    backface-visibility:hidden;
+    background:white;
+    box-shadow:0 0 15px rgba(0,0,0,.3);
+}
+
+.page img{
+    width:100%;
+    height:100%;
+    display:block;
+}
+
+.page.flipped{
+    transform:rotateY(-180deg);
+}
+
+.controls{
+    position:fixed;
+    bottom:20px;
+}
+
+button{
+    padding:10px 20px;
+    margin:0 10px;
+    font-size:18px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="book" id="book">
+
+    <div class="page"><img src="1.jpg"></div>
+    <div class="page"><img src="2.jpg"></div>
+    <div class="page"><img src="3.jpg"></div>
+    <div class="page"><img src="4.jpg"></div>
+    <div class="page"><img src="5.jpg"></div>
+    <div class="page"><img src="6.jpg"></div>
+    <div class="page"><img src="7.jpg"></div>
+    <div class="page"><img src="8.jpg"></div>
+    <div class="page"><img src="9.jpg"></div>
+    <div class="page"><img src="10.jpg"></div>
+
+</div>
+
+<div class="controls">
+    <button onclick="prevPage()">◀ 上一頁</button>
+    <button onclick="nextPage()">下一頁 ▶</button>
+</div>
+
+<script>
+const pages = document.querySelectorAll('.page');
+
+pages.forEach((page, index) => {
+    page.style.zIndex = pages.length - index;
+});
+
+let current = 0;
+
+function nextPage(){
+    if(current < pages.length){
+        pages[current].classList.add('flipped');
+        current++;
+    }
+}
+
+function prevPage(){
+    if(current > 0){
+        current--;
+        pages[current].classList.remove('flipped');
+    }
+}
+</script>
+
+</body>
+</html>
