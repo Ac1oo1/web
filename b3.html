@@ -1,98 +1,1037 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
 
-<title>圖片翻頁瀏覽器</title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0,
+             maximum-scale=1.0, user-scalable=no"
+>
+
+<title>3D 翻書圖片瀏覽器</title>
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+/* =====================================================
+   全域設定
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#000;
-    font-family:Arial, sans-serif;
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    font-family:
+        Arial,
+        "Microsoft JhengHei",
+        sans-serif;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            #5b4638 0%,
+            #30251f 55%,
+            #17110e 100%
+        );
+
+    user-select: none;
+    overscroll-behavior: none;
 }
 
-#viewer{
-    width:100vw;
-    height:100vh;
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
+/* =====================================================
+   主畫面
+===================================================== */
+
+#viewer {
+    position: relative;
+
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    perspective: 2600px;
+
+    overflow: hidden;
 }
 
-/* 固定頁面區域 */
-.page-frame{
-    width:100vw;
-    height:100vh;
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
+/* 桌面光影 */
 
-    overflow:hidden;
+#viewer::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at 50% 38%,
+            rgba(255, 255, 255, 0.13),
+            transparent 46%
+        );
 }
 
-/* 圖片自動符合視窗 */
-#photo{
-    width:100%;
-    height:100%;
-    object-fit:contain;
 
-    user-select:none;
-    -webkit-user-drag:none;
+/* =====================================================
+   書本容器
+===================================================== */
+
+.book {
+    position: relative;
+
+    width: min(92vw, 1500px);
+    height: min(82vh, 900px);
+
+    display: flex;
+
+    transform-style: preserve-3d;
+
+    filter:
+        drop-shadow(0 35px 30px rgba(0, 0, 0, 0.48))
+        drop-shadow(0 12px 10px rgba(0, 0, 0, 0.38));
 }
 
-/* 控制列 */
-.controls{
 
-    position:fixed;
-    bottom:15px;
-    left:50%;
+/* 書本底部厚度 */
 
-    transform:translateX(-50%);
+.book::before {
+    content: "";
 
-    display:flex;
-    align-items:center;
-    gap:10px;
+    position: absolute;
 
-    z-index:999;
+    left: 1.2%;
+    right: 1.2%;
+    bottom: -14px;
+
+    height: 22px;
+
+    border-radius: 0 0 12px 12px;
+
+    background:
+        repeating-linear-gradient(
+            0deg,
+            #d8d2c8 0px,
+            #d8d2c8 2px,
+            #b9b1a4 3px,
+            #f0ece5 4px
+        );
+
+    box-shadow:
+        0 8px 12px rgba(0, 0, 0, 0.4);
+
+    transform: translateZ(-10px);
 }
 
-button{
 
-    padding:10px 18px;
+/* =====================================================
+   左右固定頁面
+===================================================== */
 
-    border:none;
-    border-radius:6px;
+.page {
+    position: relative;
 
-    background:#2196F3;
-    color:#fff;
+    width: 50%;
+    height: 100%;
 
-    font-size:16px;
-    cursor:pointer;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            90deg,
+            #f4f0e8,
+            #fffdf8
+        );
+
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
 }
 
-button:hover{
-    background:#1976D2;
+
+/* 左頁 */
+
+.left-page {
+    border-radius: 16px 2px 2px 16px;
+
+    box-shadow:
+        inset -22px 0 35px rgba(0, 0, 0, 0.15),
+        inset 7px 0 12px rgba(255, 255, 255, 0.65);
 }
 
-#pageNo{
 
-    color:white;
-    font-size:18px;
-    min-width:90px;
-    text-align:center;
+/* 右頁 */
+
+.right-page {
+    border-radius: 2px 16px 16px 2px;
+
+    box-shadow:
+        inset 22px 0 35px rgba(0, 0, 0, 0.15),
+        inset -7px 0 12px rgba(255, 255, 255, 0.65);
+}
+
+
+/* 頁面圖片 */
+
+.page img,
+.sheet-face img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f7f3eb,
+            #fff
+        );
+
+    pointer-events: none;
+    -webkit-user-drag: none;
+}
+
+
+/* 空白頁 */
+
+.blank-page {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #a69e92;
+
+    font-size: 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #eee9df,
+            #fffdf8 50%,
+            #eee9df
+        );
+}
+
+
+/* =====================================================
+   中央書脊
+===================================================== */
+
+.book-spine {
+    position: absolute;
+
+    top: 0;
+    bottom: 0;
+    left: 50%;
+
+    z-index: 50;
+
+    width: 42px;
+
+    transform: translateX(-50%);
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.08) 10%,
+            rgba(0, 0, 0, 0.28) 42%,
+            rgba(0, 0, 0, 0.42) 49%,
+            rgba(255, 255, 255, 0.11) 53%,
+            rgba(0, 0, 0, 0.22) 62%,
+            rgba(0, 0, 0, 0.08) 88%,
+            transparent 100%
+        );
+
+    filter: blur(1.5px);
+}
+
+
+/* 書脊底部陰影 */
+
+.book-spine::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    bottom: -20px;
+
+    width: 80px;
+    height: 28px;
+
+    transform: translateX(-50%);
+
+    background:
+        radial-gradient(
+            ellipse,
+            rgba(0, 0, 0, 0.6),
+            transparent 70%
+        );
+}
+
+
+/* =====================================================
+   翻動紙張
+===================================================== */
+
+.turning-sheet {
+    position: absolute;
+
+    top: 0;
+
+    width: 50%;
+    height: 100%;
+
+    z-index: 30;
+
+    display: none;
+
+    transform-style: preserve-3d;
+
+    will-change: transform;
+}
+
+
+/* 紙張正反兩面 */
+
+.sheet-face {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    backface-visibility: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f4efe6,
+            #fff
+        );
+}
+
+
+/* 紙張正面 */
+
+.sheet-front {
+    z-index: 2;
+}
+
+
+/* 紙張背面 */
+
+.sheet-back {
+    transform: rotateY(180deg);
+
+    box-shadow:
+        inset 18px 0 30px rgba(0, 0, 0, 0.13);
+}
+
+
+/* 紙張光影 */
+
+.sheet-light {
+    position: absolute;
+    inset: 0;
+
+    z-index: 10;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    backface-visibility: hidden;
+
+    background:
+        linear-gradient(
+            105deg,
+            transparent 12%,
+            rgba(255, 255, 255, 0.08) 34%,
+            rgba(255, 255, 255, 0.72) 50%,
+            rgba(0, 0, 0, 0.14) 71%,
+            transparent 92%
+        );
+
+    mix-blend-mode: screen;
+}
+
+
+/* 紙張邊緣 */
+
+.sheet-edge {
+    position: absolute;
+
+    top: 0;
+    bottom: 0;
+
+    z-index: 12;
+
+    width: 9px;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+            #8b847a,
+            #fff,
+            #999186
+        );
+
+    box-shadow:
+        0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+
+/* =====================================================
+   下一頁：右頁向左翻
+===================================================== */
+
+.turn-next {
+    display: block;
+
+    right: 0;
+
+    transform-origin: left center;
+
+    animation:
+        turnNext 1000ms
+        cubic-bezier(0.42, 0, 0.2, 1)
+        forwards;
+}
+
+.turn-next .sheet-front {
+    border-radius: 2px 16px 16px 2px;
+
+    box-shadow:
+        inset 20px 0 28px rgba(0, 0, 0, 0.12);
+}
+
+.turn-next .sheet-back {
+    border-radius: 16px 2px 2px 16px;
+}
+
+.turn-next .sheet-edge {
+    right: -4px;
+
+    animation:
+        edgeNext 1000ms ease-in-out forwards;
+}
+
+.turn-next .sheet-light {
+    animation:
+        lightNext 1000ms ease-in-out forwards;
+}
+
+
+@keyframes turnNext {
+
+    0% {
+        transform:
+            rotateY(0deg)
+            translateZ(2px)
+            skewY(0deg);
+
+        filter: brightness(1);
+
+        box-shadow:
+            0 0 0 rgba(0, 0, 0, 0);
+    }
+
+    18% {
+        transform:
+            rotateY(-20deg)
+            translateZ(18px)
+            skewY(-0.4deg);
+
+        filter: brightness(1.03);
+
+        box-shadow:
+            22px 4px 35px rgba(0, 0, 0, 0.22);
+    }
+
+    48% {
+        transform:
+            rotateY(-88deg)
+            translateZ(46px)
+            skewY(-1.5deg);
+
+        filter: brightness(0.82);
+
+        box-shadow:
+            55px 8px 68px rgba(0, 0, 0, 0.48);
+    }
+
+    72% {
+        transform:
+            rotateY(-143deg)
+            translateZ(24px)
+            skewY(-0.7deg);
+
+        filter: brightness(0.78);
+
+        box-shadow:
+            28px 5px 42px rgba(0, 0, 0, 0.35);
+    }
+
+    100% {
+        transform:
+            rotateY(-180deg)
+            translateZ(2px)
+            skewY(0deg);
+
+        filter: brightness(0.96);
+
+        box-shadow:
+            0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+
+@keyframes lightNext {
+
+    0% {
+        opacity: 0;
+        transform: translateX(75%);
+    }
+
+    30% {
+        opacity: 0.38;
+    }
+
+    52% {
+        opacity: 0.82;
+        transform: translateX(0);
+    }
+
+    80% {
+        opacity: 0.26;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-70%);
+    }
+}
+
+
+@keyframes edgeNext {
+
+    0% {
+        opacity: 0;
+        transform: scaleX(0.5);
+    }
+
+    35% {
+        opacity: 0.65;
+    }
+
+    52% {
+        opacity: 1;
+        transform: scaleX(1.8);
+    }
+
+    80% {
+        opacity: 0.35;
+    }
+
+    100% {
+        opacity: 0;
+        transform: scaleX(0.5);
+    }
+}
+
+
+/* =====================================================
+   上一頁：左頁向右翻
+===================================================== */
+
+.turn-prev {
+    display: block;
+
+    left: 0;
+
+    transform-origin: right center;
+
+    animation:
+        turnPrev 1000ms
+        cubic-bezier(0.42, 0, 0.2, 1)
+        forwards;
+}
+
+.turn-prev .sheet-front {
+    border-radius: 16px 2px 2px 16px;
+
+    box-shadow:
+        inset -20px 0 28px rgba(0, 0, 0, 0.12);
+}
+
+.turn-prev .sheet-back {
+    border-radius: 2px 16px 16px 2px;
+}
+
+.turn-prev .sheet-edge {
+    left: -4px;
+
+    animation:
+        edgePrev 1000ms ease-in-out forwards;
+}
+
+.turn-prev .sheet-light {
+    animation:
+        lightPrev 1000ms ease-in-out forwards;
+}
+
+
+@keyframes turnPrev {
+
+    0% {
+        transform:
+            rotateY(0deg)
+            translateZ(2px)
+            skewY(0deg);
+
+        filter: brightness(1);
+
+        box-shadow:
+            0 0 0 rgba(0, 0, 0, 0);
+    }
+
+    18% {
+        transform:
+            rotateY(20deg)
+            translateZ(18px)
+            skewY(0.4deg);
+
+        filter: brightness(1.03);
+
+        box-shadow:
+            -22px 4px 35px rgba(0, 0, 0, 0.22);
+    }
+
+    48% {
+        transform:
+            rotateY(88deg)
+            translateZ(46px)
+            skewY(1.5deg);
+
+        filter: brightness(0.82);
+
+        box-shadow:
+            -55px 8px 68px rgba(0, 0, 0, 0.48);
+    }
+
+    72% {
+        transform:
+            rotateY(143deg)
+            translateZ(24px)
+            skewY(0.7deg);
+
+        filter: brightness(0.78);
+
+        box-shadow:
+            -28px 5px 42px rgba(0, 0, 0, 0.35);
+    }
+
+    100% {
+        transform:
+            rotateY(180deg)
+            translateZ(2px)
+            skewY(0deg);
+
+        filter: brightness(0.96);
+
+        box-shadow:
+            0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+
+@keyframes lightPrev {
+
+    0% {
+        opacity: 0;
+        transform: translateX(-75%);
+    }
+
+    30% {
+        opacity: 0.38;
+    }
+
+    52% {
+        opacity: 0.82;
+        transform: translateX(0);
+    }
+
+    80% {
+        opacity: 0.26;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(70%);
+    }
+}
+
+
+@keyframes edgePrev {
+
+    0% {
+        opacity: 0;
+        transform: scaleX(0.5);
+    }
+
+    35% {
+        opacity: 0.65;
+    }
+
+    52% {
+        opacity: 1;
+        transform: scaleX(1.8);
+    }
+
+    80% {
+        opacity: 0.35;
+    }
+
+    100% {
+        opacity: 0;
+        transform: scaleX(0.5);
+    }
+}
+
+
+/* =====================================================
+   左右點擊區域
+===================================================== */
+
+.click-zone {
+    position: fixed;
+
+    top: 0;
+    bottom: 0;
+
+    width: 16vw;
+
+    z-index: 80;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+
+    opacity: 0;
+
+    transition: opacity 0.25s ease;
+}
+
+.click-zone:hover {
+    opacity: 1;
+}
+
+.click-zone::after {
+    width: 48px;
+    height: 70px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: white;
+
+    font-size: 38px;
+
+    background: rgba(0, 0, 0, 0.35);
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    backdrop-filter: blur(8px);
+
+    box-shadow:
+        0 7px 22px rgba(0, 0, 0, 0.38);
+}
+
+.left-zone {
+    left: 0;
+
+    justify-content: flex-start;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.35),
+            transparent
+        );
+}
+
+.left-zone::after {
+    content: "‹";
+
+    margin-left: 14px;
+
+    border-radius: 0 12px 12px 0;
+}
+
+.right-zone {
+    right: 0;
+
+    justify-content: flex-end;
+
+    background:
+        linear-gradient(
+            270deg,
+            rgba(0, 0, 0, 0.35),
+            transparent
+        );
+}
+
+.right-zone::after {
+    content: "›";
+
+    margin-right: 14px;
+
+    border-radius: 12px 0 0 12px;
+}
+
+
+/* =====================================================
+   控制列
+===================================================== */
+
+.controls {
+    position: fixed;
+
+    left: 50%;
+    bottom: 18px;
+
+    z-index: 100;
+
+    transform: translateX(-50%);
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 9px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+
+    background: rgba(20, 15, 12, 0.72);
+
+    backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+button {
+    min-width: 120px;
+
+    padding: 11px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 9px;
+
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    background:
+        linear-gradient(
+            180deg,
+            #8a623f,
+            #5e3f28
+        );
+
+    box-shadow:
+        0 5px 12px rgba(0, 0, 0, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        filter 0.2s ease,
+        opacity 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+
+    filter: brightness(1.15);
+}
+
+button:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+#pageNo {
+    min-width: 120px;
+
+    color: white;
+
+    text-align: center;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    text-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+
+/* 操作提示 */
+
+.help-text {
+    position: fixed;
+
+    top: 14px;
+    left: 50%;
+
+    z-index: 100;
+
+    transform: translateX(-50%);
+
+    padding: 7px 15px;
+
+    color: rgba(255, 255, 255, 0.88);
+
+    font-size: 13px;
+
+    border-radius: 20px;
+
+    background: rgba(20, 15, 12, 0.58);
+
+    backdrop-filter: blur(8px);
+
+    pointer-events: none;
+
+    transition: opacity 0.5s ease;
+}
+
+
+/* =====================================================
+   手機版
+===================================================== */
+
+@media (max-width: 800px) {
+
+    .book {
+        width: 96vw;
+        height: 72vh;
+    }
+
+    .controls {
+        width: calc(100% - 20px);
+
+        bottom: 10px;
+
+        gap: 7px;
+
+        padding: 7px 8px;
+    }
+
+    button {
+        min-width: 0;
+
+        flex: 1;
+
+        padding: 10px 7px;
+
+        font-size: 14px;
+    }
+
+    #pageNo {
+        min-width: 90px;
+
+        font-size: 14px;
+    }
+
+    .click-zone {
+        width: 11vw;
+    }
+
+    .click-zone::after {
+        display: none;
+    }
+
+    .book-spine {
+        width: 25px;
+    }
+
+    .help-text {
+        width: calc(100% - 24px);
+
+        top: 8px;
+
+        text-align: center;
+
+        font-size: 11px;
+    }
+}
+
+
+/* 手機直向時增加書本高度 */
+
+@media (
+    max-width: 650px
+) and (
+    orientation: portrait
+) {
+
+    .book {
+        width: 98vw;
+        height: 60vh;
+    }
+}
+
+
+/* 減少動畫設定 */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .turn-next,
+    .turn-prev,
+    .turn-next .sheet-light,
+    .turn-prev .sheet-light,
+    .turn-next .sheet-edge,
+    .turn-prev .sheet-edge {
+        animation-duration: 400ms;
+    }
 }
 
 </style>
@@ -102,164 +1041,910 @@ button:hover{
 
 <div id="viewer">
 
-    <div class="page-frame">
+    <div class="book" id="book">
 
-        <img id="photo" src="1.jpg" alt="">
+        <!-- 固定左頁 -->
+        <div class="page left-page">
+            <img
+                id="leftPhoto"
+                src="1.png"
+                alt="左頁"
+                draggable="false"
+            >
+        </div>
+
+        <!-- 固定右頁 -->
+        <div class="page right-page">
+            <img
+                id="rightPhoto"
+                src="2.png"
+                alt="右頁"
+                draggable="false"
+            >
+        </div>
+
+        <!-- 翻動紙張 -->
+        <div
+            class="turning-sheet"
+            id="turningSheet"
+        >
+
+            <!-- 紙張正面 -->
+            <div class="sheet-face sheet-front">
+                <img
+                    id="sheetFrontPhoto"
+                    src="2.png"
+                    alt=""
+                    draggable="false"
+                >
+
+                <div class="sheet-light"></div>
+                <div class="sheet-edge"></div>
+            </div>
+
+            <!-- 紙張背面 -->
+            <div class="sheet-face sheet-back">
+                <img
+                    id="sheetBackPhoto"
+                    src="3.png"
+                    alt=""
+                    draggable="false"
+                >
+            </div>
+
+        </div>
+
+        <!-- 書脊 -->
+        <div class="book-spine"></div>
 
     </div>
 
 </div>
 
+
+<!-- 左右點擊區 -->
+<div
+    class="click-zone left-zone"
+    id="leftZone"
+    title="翻到上一組"
+></div>
+
+<div
+    class="click-zone right-zone"
+    id="rightZone"
+    title="翻到下一組"
+></div>
+
+
+<!-- 操作提示 -->
+<div class="help-text" id="helpText">
+    可使用左右鍵、滑鼠滾輪、拖曳或手機滑動翻書
+</div>
+
+
+<!-- 控制列 -->
 <div class="controls">
 
-    <button onclick="prevPage()">◀ 上一頁</button>
+    <button
+        id="prevButton"
+        type="button"
+    >
+        ◀ 上一頁
+    </button>
 
-    <span id="pageNo">1 / 10</span>
+    <span id="pageNo">
+        1－2 / 10
+    </span>
 
-    <button onclick="nextPage()">下一頁 ▶</button>
+    <button
+        id="nextButton"
+        type="button"
+    >
+        下一頁 ▶
+    </button>
 
 </div>
 
+
 <script>
 
-// 圖片清單
-const images = [
-    "1.jpg",
-    "2.jpg",
-    "3.jpg",
-    "4.jpg",
-    "5.jpg",
-    "6.jpg",
-    "7.jpg",
-    "8.jpg",
-    "9.jpg",
-    "10.jpg",
-    "11.jpg",
-    "12.jpg",
-    "13.jpg",
-    "14.jpg",
-        "15.jpg",
-        "16.jpg",
-        "17.jpg",
-        "18.jpg",  
-    "19.jpg",
-    "20.jpg"
+/* =====================================================
+   圖片清單
+===================================================== */
 
+const images = [
+    "1.png",
+    "2.png",
+    "3.png",
+    "4.png",
+    "5.png",
+    "6.png",
+    "7.png",
+    "8.png",
+    "9.png",
+    "10.png",
+    "11.png",
+    "12.png",
+    "13.png",
+    "14.png",
+    "15.png",
+    "16.png"
 ];
 
-let currentPage = 0;
 
-const photo = document.getElementById("photo");
-const pageNo = document.getElementById("pageNo");
+/* =====================================================
+   設定
+===================================================== */
 
-function showPage(index){
+const animationDuration = 1000;
 
-    photo.src = images[index];
+/*
+目前左頁的圖片索引。
 
-    pageNo.textContent =
-        `${index + 1} / ${images.length}`;
+0 代表：
+左頁為 1.png
+右頁為 2.png
 
-    preload(index + 1);
+下一次翻頁後：
+左頁為 3.png
+右頁為 4.png
+*/
+
+let spreadStart = 0;
+
+let isAnimating = false;
+let wheelLocked = false;
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+let pointerStartX = 0;
+let pointerStartY = 0;
+
+let isPointerDown = false;
+
+
+/* =====================================================
+   取得元素
+===================================================== */
+
+const leftPhoto =
+    document.getElementById("leftPhoto");
+
+const rightPhoto =
+    document.getElementById("rightPhoto");
+
+const turningSheet =
+    document.getElementById("turningSheet");
+
+const sheetFrontPhoto =
+    document.getElementById("sheetFrontPhoto");
+
+const sheetBackPhoto =
+    document.getElementById("sheetBackPhoto");
+
+const prevButton =
+    document.getElementById("prevButton");
+
+const nextButton =
+    document.getElementById("nextButton");
+
+const pageNo =
+    document.getElementById("pageNo");
+
+const leftZone =
+    document.getElementById("leftZone");
+
+const rightZone =
+    document.getElementById("rightZone");
+
+const helpText =
+    document.getElementById("helpText");
+
+
+/* =====================================================
+   取得圖片網址
+===================================================== */
+
+function getImage(index) {
+
+    if (
+        index < 0 ||
+        index >= images.length
+    ) {
+        return "";
+    }
+
+    return images[index];
 }
 
-function nextPage(){
 
-    if(currentPage < images.length - 1){
+/* =====================================================
+   設定圖片或空白頁
+===================================================== */
 
-        currentPage++;
+function setPageImage(imageElement, index) {
 
-        showPage(currentPage);
+    const src = getImage(index);
+
+    if (src) {
+
+        imageElement.src = src;
+        imageElement.style.display = "block";
+
+    } else {
+
+        /*
+        透明 SVG 空白頁。
+        不需要額外準備 blank.png。
+        */
+
+        imageElement.src =
+            "data:image/svg+xml;charset=UTF-8," +
+            encodeURIComponent(`
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="1000"
+                    height="1400"
+                >
+                    <defs>
+                        <linearGradient
+                            id="paper"
+                            x1="0"
+                            y1="0"
+                            x2="1"
+                            y2="1"
+                        >
+                            <stop
+                                offset="0%"
+                                stop-color="#eee9df"
+                            />
+                            <stop
+                                offset="50%"
+                                stop-color="#fffdf8"
+                            />
+                            <stop
+                                offset="100%"
+                                stop-color="#eee9df"
+                            />
+                        </linearGradient>
+                    </defs>
+
+                    <rect
+                        width="100%"
+                        height="100%"
+                        fill="url(#paper)"
+                    />
+                </svg>
+            `);
+
+        imageElement.style.display = "block";
     }
 }
 
-function prevPage(){
 
-    if(currentPage > 0){
+/* =====================================================
+   更新左右頁
+===================================================== */
 
-        currentPage--;
+function renderSpread() {
 
-        showPage(currentPage);
-    }
+    setPageImage(
+        leftPhoto,
+        spreadStart
+    );
+
+    setPageImage(
+        rightPhoto,
+        spreadStart + 1
+    );
+
+    updateControls();
+
+    preloadNearbyImages();
 }
 
-// 鍵盤翻頁
-document.addEventListener("keydown",(e)=>{
 
-    if(e.key==="ArrowRight" ||
-       e.key==="PageDown" ||
-       e.key===" "){
+/* =====================================================
+   更新頁碼與按鈕
+===================================================== */
 
-        nextPage();
+function updateControls() {
+
+    const leftNumber =
+        spreadStart + 1;
+
+    const rightIndex =
+        spreadStart + 1;
+
+    let pageText;
+
+    if (rightIndex < images.length) {
+
+        pageText =
+            `${leftNumber}－${rightIndex + 1} / ${images.length}`;
+
+    } else {
+
+        pageText =
+            `${leftNumber} / ${images.length}`;
     }
 
-    if(e.key==="ArrowLeft" ||
-       e.key==="PageUp"){
+    pageNo.textContent = pageText;
 
-        prevPage();
+
+    const canGoPrev =
+        spreadStart > 0;
+
+    const canGoNext =
+        spreadStart + 2 < images.length;
+
+
+    prevButton.disabled =
+        !canGoPrev || isAnimating;
+
+    nextButton.disabled =
+        !canGoNext || isAnimating;
+
+
+    leftZone.style.pointerEvents =
+        canGoPrev && !isAnimating
+            ? "auto"
+            : "none";
+
+    rightZone.style.pointerEvents =
+        canGoNext && !isAnimating
+            ? "auto"
+            : "none";
+}
+
+
+/* =====================================================
+   清除翻頁狀態
+===================================================== */
+
+function resetTurningSheet() {
+
+    turningSheet.classList.remove(
+        "turn-next",
+        "turn-prev"
+    );
+
+    turningSheet.style.display = "none";
+
+    void turningSheet.offsetWidth;
+}
+
+
+/* =====================================================
+   翻到下一組
+===================================================== */
+
+function nextSpread() {
+
+    if (isAnimating) {
+        return;
     }
-});
 
-// 滑鼠滾輪翻頁
-let wheelLock=false;
+    const newSpreadStart =
+        spreadStart + 2;
 
-document.addEventListener("wheel",(e)=>{
-
-    if(wheelLock) return;
-
-    wheelLock=true;
-
-    setTimeout(()=>{
-        wheelLock=false;
-    },300);
-
-    if(e.deltaY>0){
-        nextPage();
-    }else{
-        prevPage();
+    if (newSpreadStart >= images.length) {
+        return;
     }
 
-},{passive:true});
+    isAnimating = true;
+
+    updateControls();
+    resetTurningSheet();
 
 
-// 手機滑動翻頁
-let touchStartX=0;
+    /*
+    翻動正面：
+    目前右頁。
 
-document.addEventListener("touchstart",(e)=>{
+    翻動背面：
+    下一組左頁。
+    */
 
-    touchStartX =
-        e.changedTouches[0].screenX;
+    setPageImage(
+        sheetFrontPhoto,
+        spreadStart + 1
+    );
 
-});
+    setPageImage(
+        sheetBackPhoto,
+        newSpreadStart
+    );
 
-document.addEventListener("touchend",(e)=>{
 
-    const touchEndX =
-        e.changedTouches[0].screenX;
+    /*
+    翻動時，底層右頁先改為下一組右頁。
+    左頁暫時保持不變，避免露出錯誤圖片。
+    */
 
-    const diff =
-        touchStartX - touchEndX;
+    setPageImage(
+        rightPhoto,
+        newSpreadStart + 1
+    );
 
-    if(Math.abs(diff) < 50) return;
+    turningSheet.style.display = "block";
 
-    if(diff > 0){
-        nextPage();
-    }else{
-        prevPage();
+    void turningSheet.offsetWidth;
+
+    turningSheet.classList.add(
+        "turn-next"
+    );
+
+
+    window.setTimeout(() => {
+
+        spreadStart = newSpreadStart;
+
+        renderSpread();
+
+        resetTurningSheet();
+
+        isAnimating = false;
+
+        updateControls();
+
+    }, animationDuration);
+}
+
+
+/* =====================================================
+   翻到上一組
+===================================================== */
+
+function prevSpread() {
+
+    if (isAnimating) {
+        return;
     }
 
-});
+    const newSpreadStart =
+        spreadStart - 2;
 
-// 預載下一張圖片
-function preload(index){
+    if (newSpreadStart < 0) {
+        return;
+    }
 
-    if(index >= images.length) return;
+    isAnimating = true;
+
+    updateControls();
+    resetTurningSheet();
+
+
+    /*
+    翻動正面：
+    目前左頁。
+
+    翻動背面：
+    上一組右頁。
+    */
+
+    setPageImage(
+        sheetFrontPhoto,
+        spreadStart
+    );
+
+    setPageImage(
+        sheetBackPhoto,
+        newSpreadStart + 1
+    );
+
+
+    /*
+    底層左頁先改成上一組左頁。
+    */
+
+    setPageImage(
+        leftPhoto,
+        newSpreadStart
+    );
+
+    turningSheet.style.display = "block";
+
+    void turningSheet.offsetWidth;
+
+    turningSheet.classList.add(
+        "turn-prev"
+    );
+
+
+    window.setTimeout(() => {
+
+        spreadStart = newSpreadStart;
+
+        renderSpread();
+
+        resetTurningSheet();
+
+        isAnimating = false;
+
+        updateControls();
+
+    }, animationDuration);
+}
+
+
+/* =====================================================
+   圖片預載
+===================================================== */
+
+function preloadImage(index) {
+
+    if (
+        index < 0 ||
+        index >= images.length
+    ) {
+        return;
+    }
 
     const img = new Image();
+
     img.src = images[index];
 }
 
-// 初始頁
-showPage(0);
+
+function preloadNearbyImages() {
+
+    preloadImage(spreadStart - 2);
+    preloadImage(spreadStart - 1);
+
+    preloadImage(spreadStart + 2);
+    preloadImage(spreadStart + 3);
+    preloadImage(spreadStart + 4);
+    preloadImage(spreadStart + 5);
+}
+
+
+/* =====================================================
+   按鈕操作
+===================================================== */
+
+prevButton.addEventListener(
+    "click",
+    prevSpread
+);
+
+nextButton.addEventListener(
+    "click",
+    nextSpread
+);
+
+leftZone.addEventListener(
+    "click",
+    prevSpread
+);
+
+rightZone.addEventListener(
+    "click",
+    nextSpread
+);
+
+
+/* =====================================================
+   鍵盤操作
+===================================================== */
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (isAnimating) {
+            return;
+        }
+
+        switch (event.key) {
+
+            case "ArrowRight":
+            case "PageDown":
+            case " ":
+
+                event.preventDefault();
+
+                nextSpread();
+
+                break;
+
+
+            case "ArrowLeft":
+            case "PageUp":
+
+                event.preventDefault();
+
+                prevSpread();
+
+                break;
+
+
+            case "Home":
+
+                event.preventDefault();
+
+                if (spreadStart !== 0) {
+
+                    spreadStart = 0;
+
+                    renderSpread();
+                }
+
+                break;
+
+
+            case "End":
+
+                event.preventDefault();
+
+                spreadStart =
+                    Math.floor(
+                        (images.length - 1) / 2
+                    ) * 2;
+
+                renderSpread();
+
+                break;
+        }
+    }
+);
+
+
+/* =====================================================
+   滑鼠滾輪
+===================================================== */
+
+document.addEventListener(
+    "wheel",
+    (event) => {
+
+        event.preventDefault();
+
+        if (
+            wheelLocked ||
+            isAnimating
+        ) {
+            return;
+        }
+
+        const movement =
+            Math.abs(event.deltaX) >
+            Math.abs(event.deltaY)
+                ? event.deltaX
+                : event.deltaY;
+
+        if (movement === 0) {
+            return;
+        }
+
+        wheelLocked = true;
+
+        window.setTimeout(() => {
+
+            wheelLocked = false;
+
+        }, animationDuration + 100);
+
+
+        if (movement > 0) {
+
+            nextSpread();
+
+        } else {
+
+            prevSpread();
+        }
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+/* =====================================================
+   手機滑動
+===================================================== */
+
+document.addEventListener(
+    "touchstart",
+    (event) => {
+
+        if (
+            event.changedTouches.length === 0
+        ) {
+            return;
+        }
+
+        touchStartX =
+            event.changedTouches[0].clientX;
+
+        touchStartY =
+            event.changedTouches[0].clientY;
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+document.addEventListener(
+    "touchend",
+    (event) => {
+
+        if (
+            isAnimating ||
+            event.changedTouches.length === 0
+        ) {
+            return;
+        }
+
+        const endX =
+            event.changedTouches[0].clientX;
+
+        const endY =
+            event.changedTouches[0].clientY;
+
+        const diffX =
+            touchStartX - endX;
+
+        const diffY =
+            touchStartY - endY;
+
+
+        if (
+            Math.abs(diffY) >
+            Math.abs(diffX)
+        ) {
+            return;
+        }
+
+        if (Math.abs(diffX) < 55) {
+            return;
+        }
+
+
+        if (diffX > 0) {
+
+            nextSpread();
+
+        } else {
+
+            prevSpread();
+        }
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+/* =====================================================
+   滑鼠拖曳
+===================================================== */
+
+document.addEventListener(
+    "pointerdown",
+    (event) => {
+
+        if (
+            event.target.closest(".controls")
+        ) {
+            return;
+        }
+
+        pointerStartX = event.clientX;
+        pointerStartY = event.clientY;
+
+        isPointerDown = true;
+    }
+);
+
+
+document.addEventListener(
+    "pointerup",
+    (event) => {
+
+        if (
+            !isPointerDown ||
+            isAnimating
+        ) {
+            isPointerDown = false;
+            return;
+        }
+
+        isPointerDown = false;
+
+        const diffX =
+            pointerStartX - event.clientX;
+
+        const diffY =
+            pointerStartY - event.clientY;
+
+
+        if (
+            Math.abs(diffX) < 80 ||
+            Math.abs(diffY) >
+            Math.abs(diffX)
+        ) {
+            return;
+        }
+
+
+        if (diffX > 0) {
+
+            nextSpread();
+
+        } else {
+
+            prevSpread();
+        }
+    }
+);
+
+
+/* =====================================================
+   圖片載入失敗
+===================================================== */
+
+function handleImageError(event) {
+
+    console.error(
+        "圖片載入失敗：",
+        event.target.src
+    );
+}
+
+
+leftPhoto.addEventListener(
+    "error",
+    handleImageError
+);
+
+rightPhoto.addEventListener(
+    "error",
+    handleImageError
+);
+
+sheetFrontPhoto.addEventListener(
+    "error",
+    handleImageError
+);
+
+sheetBackPhoto.addEventListener(
+    "error",
+    handleImageError
+);
+
+
+/* =====================================================
+   隱藏操作提示
+===================================================== */
+
+window.setTimeout(() => {
+
+    helpText.style.opacity = "0";
+
+}, 5000);
+
+
+/* =====================================================
+   初始化
+===================================================== */
+
+function initializeBook() {
+
+    spreadStart = 0;
+
+    resetTurningSheet();
+
+    renderSpread();
+}
+
+initializeBook();
 
 </script>
 
