@@ -1,281 +1,225 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>你是甚麼特有種?</title>
+const RESULTS = {
 
-<style>
-body{
-    font-family:"Microsoft JhengHei",sans-serif;
-    background:#f5f5f5;
-    margin:30px;
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:25px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.15);
-}
-
-h1{
-    text-align:center;
-}
-
-.question{
-    margin:20px 0;
-    padding:15px;
-    border-bottom:1px solid #ddd;
-}
-
-.options{
-    margin-top:10px;
-}
-
-label{
-    margin-right:18px;
-    cursor:pointer;
-}
-
-button{
-    margin-top:25px;
-    width:100%;
-    padding:15px;
-    font-size:18px;
-    border:none;
-    background:#1976d2;
-    color:white;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#125aa0;
-}
-
-.result{
-    margin-top:30px;
-    padding:20px;
-    background:#eef7ff;
-    border-radius:8px;
-    text-align:center;
-    display:none;
-}
-
-.result h2{
-    margin:0 0 8px 0;
-    font-size:26px;
-}
-
-.result p{
-    font-size:16px;
-    line-height:1.6;
-    color:#333;
-    max-width:600px;
-    margin:0 auto;
-}
-
-.result img{
-    margin-top:20px;
-    max-width:100%;
-    width:500px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.25);
-}
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>你是甚麼特有種?</h1>
-
-<div id="survey"></div>
-
-<button onclick="calculateScore()">查看角色</button>
-
-<div class="result" id="result">
-    <h2 id="resultTitle"></h2>
-    <p id="resultText"></p>
-    <img id="resultImage" src="" alt="結果圖片">
-</div>
-
-</div>
-
-<script>
-
-const questions=[
-"比起離群索居，你更喜歡與同類互相照應",
-"你享受獨自探索棲地外的環境，而非待在舒適圈",
-"面對天敵時，你經常感到慌亂，難以專注思考策略",
-"在與同伴相處時，你會優先考慮他人的處境，而不是自掃門前雪",
-"你熱衷與同伴互相幫助",
-"你不太在意自己是否會給新成員留下好印象。",
-"你時常擔心自己會遭到天敵追獵。",
-"你不喜歡在族群中擔任領導者",
-"你經常等到危險到來時才後悔莫及。",
-"你通常以正面心態看事情",
-"做決定時，你會為長遠情況作出判斷，而非一時的突發狀況",
-"對於探討未來或杞人憂天話題，你通常興趣不大。"
-];
-
-const REVERSE_ITEMS = [2, 5, 7, 8, 11];
-
-const RESULTS = [
-    {
-        max: 1.30,
-        image: "a12.jpg",
-        title: "大鱗梅氏鯿",
-        text: "本魚為初級淡水魚，喜棲息於平原河川中、下游的潭區或營養豐富的湖沼水域，活動於中上層。屬雜食性，以浮游動物、植物及小型無脊椎動物等為食。"
+    12: {
+        image: "a12.png",
+        title: "朱氏隱姬花天牛",
+        text: "X。"
     },
-    {
-        max: 1.60,
-        image: "a13.jpg",
-        title: "台灣水鹿",
-        text: "棲息於海拔1000公尺以上中高海拔的原始森林，多活動於近水源的草地，以樹葉與嫩草為主食。"
-    },
-    {
-        max: 1.90,
-        image: "a14.jpg",
-        title: "台灣高山田鼠",
-        text: "主要分佈於台灣海拔3,000公尺以上的山區，以高山草原與針葉林邊緣，主食為玉山箭竹與高山芒之嫩筍嫩芽和莖葉。"
-    },
-    {
-        max: 2.20,
-        image: "a15.png",
-        title: "台灣黑熊",
-        text: "偏好海拔1000至2500的闊葉林、針闊葉混和林、針葉林。雜食性(食物以植物為主，當植物食物短缺時會增加捕食動物的機會，相當喜歡蜂蜜)除了交配期和育幼期外通常獨居，不冬眠。"
-    },
-    {
-        max: 2.50,
-        image: "a16.png",
-        title: "台灣藍鵲",
-        text: "主要分布在中、低海拔闊葉林，多成群行動，繁殖季約在每年3月至7月，食範圍包括小型鳥、鼠、蛇、蜥蜴、昆蟲、果實，甚至廚餘剩飯。"
-    },
-    {
-        max: 2.80,
-        image: "a17.png",
+
+    13: {
+        image: "a13.png",
         title: "金絲蛇",
         text: "主要分布於北部500至1000的山區潮濕環境，以蛙類、蝌蚪為食，日行性，卵生。"
     },
-    {
-        max: 3.10,
-        image: "a18.png",
+
+    14: {
+        image: "a14.png",
+        title: "斯文豪氏攀蜥",
+        text: "X"
+    },
+
+    15: {
+        image: "a15.png",
         title: "台灣寬尾鳳蝶",
         text: "分布海拔1000至2000山區，幼蟲以台灣檫樹樹葉為食，雄性成蟲吸水，雌性成蟲在台灣檫樹產卵或附近訪花(吸花蜜)。"
     },
-    {
-        max: 3.40,
-        image: "a19.png",
+
+    16: {
+        image: "a16.png",
         title: "橙腹樹蛙",
         text: "中低海拔的森林環境，繁殖期以春夏兩季為主，蝌蚪主食為藻類、落葉，成蛙主食為小型無脊椎動物。"
     },
-    {
-        max: 3.70,
+
+    17: {
+        image: "a17.png",
+        title: "蘭嶼大葉螽",
+        text: "X"
+    },
+
+    18: {
+        image: "a18.png",
+        title: "蘭嶼筒胸竹節蟲",
+        text: "請填入18分的說明。"
+    },
+
+    19: {
+        image: "a19.png",
+        title: "大鱗梅氏鯿",
+        text: "本魚為初級淡水魚，喜棲息於平原河川中、下游的潭區或營養豐富的湖沼水域，活動於中上層。屬雜食性，以浮游動物、植物及小型無脊椎動物等為食。"
+    },
+
+    20: {
         image: "a20.png",
+        title: "火冠戴菊鳥",
+        text: "X"
+    },
+
+    21: {
+        image: "a21.png",
+        title: "台灣水鹿",
+        text: "棲息於海拔1000公尺以上中高海拔的原始森林，多活動於近水源的草地，以樹葉與嫩草為主食。"
+    },
+
+    22: {
+        image: "a22.png",
         title: "台灣長耳蝠",
         text: "分布於海拔1,500公尺以上之中、高海拔山區森林中，夜行性，以小型昆蟲為食。"
     },
-    {
-        max: 4.01,
-        image: "a21.png",
+
+    23: {
+        image: "a23.png",
+        title: "台灣高山田鼠",
+        text: "主要分佈於台灣海拔3,000公尺以上的山區，以高山草原與針葉林邊緣，主食為玉山箭竹與高山芒之嫩筍嫩芽和莖葉。"
+    },
+
+    24: {
+        image: "a24.png",
+        title: "梅花鹿",
+        text: "棲息於海拔1000公尺以上中高海拔的原始森林，多活動於近水源的草地，以樹葉與嫩草為主食。"
+    },
+
+    25: {
+        image: "a25.png",
+        title: "台灣黑熊",
+        text: "偏好海拔1000至2500的闊葉林、針闊葉混和林、針葉林。雜食性(食物以植物為主，當植物食物短缺時會增加捕食動物的機會，相當喜歡蜂蜜)除了交配期和育幼期外通常獨居，不冬眠。"
+    },
+
+    26: {
+        image: "a26.png",
         title: "台灣蔁珊瑚",
         text: "通常生長在珊瑚礁斜坡下段與沙地交界處，濾食浮游生物，珊瑚體為多口，成體行游離生活。"
+    },
+
+    27: {
+        image: "a27.png",
+        title: "台灣藍鵲",
+        text: "主要分布在中、低海拔闊葉林，多成群行動，繁殖季約在每年3月至7月，食範圍包括小型鳥、鼠、蛇、蜥蜴、昆蟲、果實，甚至廚餘剩飯。"
+    },
+
+    28: {
+        image: "a28.png",
+        title: "台灣獼猴",
+        text: "X"
+    },
+
+    29: {
+        image: "a29.png",
+        title: "鼬獾",
+        text: "X"
+    },
+
+    30: {
+        image: "a30.png",
+        title: "冠羽畫眉",
+        text: "X"
+    },
+
+    31: {
+        image: "a31.png",
+        title: "黑長尾雉",
+        text: "X"
+    },
+
+    32: {
+        image: "a32.png",
+        title: "台灣雲豹",
+        text: "X"
+    },
+
+    33: {
+        image: "a33.png",
+        title: "小靈貓",
+        text: "X"
+    },
+
+    34: {
+        image: "a34.png",
+        title: "結果34",
+        text: "X"
+    },
+
+    35: {
+        image: "a35.png",
+        title: "結果35",
+        text: "X。"
+    },
+
+    36: {
+        image: "a36.png",
+        title: "結果36",
+        text: "X"
+    },
+
+    37: {
+        image: "a37.png",
+        title: "結果37",
+        text: "X"
+    },
+
+    38: {
+        image: "a38.png",
+        title: "結果38",
+        text: "X"
+    },
+
+    39: {
+        image: "a39.png",
+        title: "結果39",
+        text: "X"
+    },
+
+    40: {
+        image: "a40.png",
+        title: "結果40",
+        text: "X"
+    },
+
+    41: {
+        image: "a41.png",
+        title: "結果41",
+        text: "X"
+    },
+
+    42: {
+        image: "a42.png",
+        title: "結果42",
+        text: "X"
+    },
+
+    43: {
+        image: "a43.png",
+        title: "結果43",
+        text: "X"
+    },
+
+    44: {
+        image: "a44.png",
+        title: "結果44",
+        text: "X"
+    },
+
+    45: {
+        image: "a45.png",
+        title: "結果45",
+        text: "X"
+    },
+
+    46: {
+        image: "a46.png",
+        title: "結果46",
+        text: "X"
+    },
+
+    47: {
+        image: "a47.png",
+        title: "結果47",
+        text: "X"
+    },
+
+    48: {
+        image: "a48.png",
+        title: "結果48",
+        text: "X"
     }
-];
 
-
-const survey=document.getElementById("survey");
-
-let html="";
-
-questions.forEach((q,index)=>{
-
-    html+=`
-<div class="question">
-<b>第${index+1}題：</b>${q}
-<div class="options">
-`;
-
-    for(let i=1;i<=4;i++){
-
-        let text="";
-
-        switch(i){
-            case 1:text="不同意";break;
-            case 2:text="有點不同意";break;
-            case 3:text="有點同意";break;
-            case 4:text="同意";break;
-        }
-
-        html+=`
-<label>
-<input type="radio" name="q${index}" value="${i}">
-${i} ${text}
-</label>
-`;
-    }
-
-    html+=`
-</div>
-</div>
-`;
-
-});
-
-survey.innerHTML=html;
-
-function getResultByAverage(avg){
-    for(const r of RESULTS){
-        if(avg <= r.max){
-            return r;
-        }
-    }
-    return RESULTS[RESULTS.length-1];
-}
-
-function calculateScore(){
-
-    let total=0;
-
-    for(let i=0;i<questions.length;i++){
-
-        const ans=document.querySelector(`input[name=q${i}]:checked`);
-
-        if(!ans){
-            alert(`還有沒作答的o，仔細檢查看看?`);
-            return;
-        }
-
-        let value=Number(ans.value);
-
-        if(REVERSE_ITEMS.includes(i)){
-            value = 5 - value;
-        }
-
-        total += value;
-
-    }
-
-    const avg = total / questions.length;
-    const result = getResultByAverage(avg);
-
-    document.getElementById("resultTitle").textContent = result.title;
-    document.getElementById("resultText").textContent = result.text;
-    document.getElementById("resultImage").src = result.image;
-    document.getElementById("resultImage").alt = result.title;
-
-    document.getElementById("result").style.display="block";
-
-    document.getElementById("result").scrollIntoView({behavior:"smooth"});
-}
-
-</script>
-
-</body>
-</html>
+};
