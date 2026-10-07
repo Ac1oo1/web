@@ -86,6 +86,14 @@ button:hover{
     font-size:26px;
 }
 
+.result .intro-title{
+    margin-top:10px;
+    margin-bottom:10px;
+    font-size:18px;
+    font-weight:bold;
+    color:#1976d2;
+}
+
 .result p{
     font-size:16px;
     line-height:1.6;
@@ -101,13 +109,6 @@ button:hover{
     width:500px;
     border-radius:10px;
     box-shadow:0 0 10px rgba(0,0,0,.25);
-}
-
-.score{
-    margin-top:10px;
-    font-size:18px;
-    font-weight:bold;
-    color:#1976d2;
 }
 
 </style>
@@ -130,7 +131,7 @@ button:hover{
 
     <h2 id="resultTitle"></h2>
 
-    <div class="score" id="resultScore"></div>
+    <div class="intro-title">介紹</div>
 
     <p id="resultText"></p>
 
@@ -147,6 +148,7 @@ button:hover{
 
 
 <script>
+
 
 /* =====================================================
    題目
@@ -183,24 +185,6 @@ const questions = [
 
 /* =====================================================
    反向計分題
-   =====================================================
-
-   JavaScript 陣列從 0 開始：
-
-   [2]  = 第3題
-   [5]  = 第6題
-   [7]  = 第8題
-   [8]  = 第9題
-   [11] = 第12題
-
-   原本：
-   1 → 4
-   2 → 3
-   3 → 2
-   4 → 1
-
-   計算方式：
-   5 - 原本分數
    ===================================================== */
 
 const REVERSE_ITEMS = [2, 5, 7, 8, 11];
@@ -440,7 +424,7 @@ const RESULTS = {
 
 
 /* =====================================================
-   建立問卷
+   建立題目
    ===================================================== */
 
 const survey = document.getElementById("survey");
@@ -524,8 +508,6 @@ function calculateScore(){
     let total = 0;
 
 
-    /* 檢查每一題 */
-
     for(let i = 0; i < questions.length; i++){
 
         const ans = document.querySelector(
@@ -559,14 +541,10 @@ function calculateScore(){
     }
 
 
-    /* =================================================
-       分數一定會介於 12～48
-       ================================================= */
+    /* 取得結果 */
 
     const result = RESULTS[total];
 
-
-    /* 防止結果不存在 */
 
     if(!result){
 
@@ -577,16 +555,11 @@ function calculateScore(){
     }
 
 
-    /* =================================================
-       顯示結果
-       ================================================= */
+    /* 顯示結果 */
 
     document.getElementById("resultTitle").textContent =
         result.title;
 
-
-    document.getElementById("resultScore").textContent =
-       
 
     document.getElementById("resultText").textContent =
         result.text;
@@ -607,7 +580,7 @@ function calculateScore(){
         "block";
 
 
-    /* 自動滑到結果 */
+    /* 自動捲到結果 */
 
     document.getElementById("result").scrollIntoView({
         behavior:"smooth"
