@@ -2,1800 +2,279 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0,
-             maximum-scale=1.0, user-scalable=no"
->
-
-<title>3D 翻書圖片瀏覽器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你是甚麼特有種?</title>
 
 <style>
-
-/* =====================================================
-   全域設定
-===================================================== */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html,
-body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-
-    font-family:
-        Arial,
-        "Microsoft JhengHei",
-        sans-serif;
-
-    background:
-        radial-gradient(
-            ellipse at center,
-            #5b4638 0%,
-            #30251f 55%,
-            #17110e 100%
-        );
-
-    user-select: none;
-    overscroll-behavior: none;
-}
-
-
-/* =====================================================
-   主畫面
-===================================================== */
-
-#viewer {
-    position: relative;
-
-    width: 100vw;
-    height: 100vh;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    perspective: 2600px;
-
-    overflow: hidden;
-
-    /* 把重繪範圍限制在這個容器內，翻頁動畫不會讓瀏覽器
-       往外層一路檢查要不要一起重排/重繪 */
-    contain: layout paint;
-}
-
-
-/* 桌面光影 */
-
-#viewer::before {
-    content: "";
-
-    position: absolute;
-    inset: 0;
-
-    pointer-events: none;
-
-    background:
-        radial-gradient(
-            ellipse at 50% 38%,
-            rgba(255, 255, 255, 0.13),
-            transparent 46%
-        );
-}
-
-
-/* =====================================================
-   書本容器
-===================================================== */
-
-.book {
-    position: relative;
-
-    width: min(92vw, 1500px);
-    height: min(82vh, 900px);
-
-    display: flex;
-
-    transform-style: preserve-3d;
-
-    filter:
-        drop-shadow(0 35px 30px rgba(0, 0, 0, 0.48))
-        drop-shadow(0 12px 10px rgba(0, 0, 0, 0.38));
-}
-
-
-/* 書本底部厚度 */
-
-.book::before {
-    content: "";
-
-    position: absolute;
-
-    left: 1.2%;
-    right: 1.2%;
-    bottom: -14px;
-
-    height: 22px;
-
-    border-radius: 0 0 12px 12px;
-
-    background:
-        repeating-linear-gradient(
-            0deg,
-            #d8d2c8 0px,
-            #d8d2c8 2px,
-            #b9b1a4 3px,
-            #f0ece5 4px
-        );
-
-    box-shadow:
-        0 8px 12px rgba(0, 0, 0, 0.4);
-
-    transform: translateZ(-10px);
-}
-
-
-/* =====================================================
-   左右固定頁面
-===================================================== */
-
-.page {
-    position: relative;
-
-    width: 50%;
-    height: 100%;
-
-    overflow: hidden;
-
-    background:
-        linear-gradient(
-            90deg,
-            #f4f0e8,
-            #fffdf8
-        );
-
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-}
-
-
-/* 左頁 */
-
-.left-page {
-    border-radius: 16px 2px 2px 16px;
-
-    box-shadow:
-        inset -22px 0 35px rgba(0, 0, 0, 0.15),
-        inset 7px 0 12px rgba(255, 255, 255, 0.65);
-}
-
-
-/* 左頁連續漂移：避免翻頁完成瞬間有停頓感
-   只用 transform + filter(brightness，不含 blur)，兩者皆可走合成層 */
-.left-page {
-    will-change: transform, filter;
-    transform: translate3d(0,0,0);
-}
-
-.left-page.left-flow-next {
-    animation: leftFlowNext 860ms cubic-bezier(0.16, 0.84, 0.26, 1) both;
-}
-
-.left-page.left-flow-prev {
-    animation: leftFlowPrev 860ms cubic-bezier(0.16, 0.84, 0.26, 1) both;
-}
-
-@keyframes leftFlowNext {
-    0%   { transform: translate3d(0,0,0) scale(1); filter: brightness(1); }
-    36%  { transform: translate3d(-0.35%, -1px, 0) scale(0.999); filter: brightness(0.985); }
-    58%  { transform: translate3d(-0.8%, -2px, 0) scale(0.997); filter: brightness(0.97); }
-    78%  { transform: translate3d(-0.25%, -1px, 0) scale(0.999); filter: brightness(0.99); }
-    100% { transform: translate3d(0,0,0) scale(1); filter: brightness(1); }
-}
-
-@keyframes leftFlowPrev {
-    0%   { transform: translate3d(0,0,0) scale(1); filter: brightness(1); }
-    28%  { transform: translate3d(0.45%, -1px, 0) scale(0.999); filter: brightness(0.985); }
-    55%  { transform: translate3d(0.75%, -2px, 0) scale(0.997); filter: brightness(0.97); }
-    82%  { transform: translate3d(0.2%, -1px, 0) scale(0.999); filter: brightness(0.99); }
-    100% { transform: translate3d(0,0,0) scale(1); filter: brightness(1); }
-}
-
-/* 右頁 */
-
-.right-page {
-    border-radius: 2px 16px 16px 2px;
-
-    box-shadow:
-        inset 22px 0 35px rgba(0, 0, 0, 0.15),
-        inset -7px 0 12px rgba(255, 255, 255, 0.65);
-}
-
-
-/* 頁面圖片 */
-
-.page img,
-.sheet-face img {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    object-fit: contain;
-
-    background:
-        linear-gradient(
-            135deg,
-            #f7f3eb,
-            #fff
-        );
-
-    pointer-events: none;
-    -webkit-user-drag: none;
-}
-
-
-/* 空白頁 */
-
-.blank-page {
-    width: 100%;
-    height: 100%;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    color: #a69e92;
-
-    font-size: 20px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #eee9df,
-            #fffdf8 50%,
-            #eee9df
-        );
-}
-
-
-/* =====================================================
-   中央書脊
-===================================================== */
-
-.book-spine {
-    position: absolute;
-
-    top: 0;
-    bottom: 0;
-    left: 50%;
-
-    z-index: 50;
-
-    width: 42px;
-
-    transform: translateX(-50%);
-
-    pointer-events: none;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(0, 0, 0, 0.08) 10%,
-            rgba(0, 0, 0, 0.28) 42%,
-            rgba(0, 0, 0, 0.42) 49%,
-            rgba(255, 255, 255, 0.11) 53%,
-            rgba(0, 0, 0, 0.22) 62%,
-            rgba(0, 0, 0, 0.08) 88%,
-            transparent 100%
-        );
-
-    filter: blur(1.5px);
-}
-
-
-/* 書脊底部陰影 */
-
-.book-spine::after {
-    content: "";
-
-    position: absolute;
-
-    left: 50%;
-    bottom: -20px;
-
-    width: 80px;
-    height: 28px;
-
-    transform: translateX(-50%);
-
-    background:
-        radial-gradient(
-            ellipse,
-            rgba(0, 0, 0, 0.6),
-            transparent 70%
-        );
-}
-
-
-/* =====================================================
-   翻動紙張
-===================================================== */
-
-.turning-sheet {
-    position: absolute;
-
-    top: 0;
-
-    width: 50%;
-    height: 100%;
-
-    z-index: 30;
-
-    display: none;
-
-    transform-style: preserve-3d;
-
-    will-change: transform;
-
-    contain: layout paint;
-}
-
-
-/* 紙張正反兩面 */
-
-.sheet-face {
-    position: absolute;
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
-
-    backface-visibility: hidden;
-
-    background:
-        linear-gradient(
-            135deg,
-            #f4efe6,
-            #fff
-        );
-}
-
-
-/* 紙張正面 */
-
-.sheet-front {
-    z-index: 2;
-}
-
-
-/* 紙張背面 */
-
-.sheet-back {
-    transform: rotateY(180deg);
-
-    box-shadow:
-        inset 18px 0 30px rgba(0, 0, 0, 0.13);
-}
-
-
-/* 翻頁過程中的下一張預覽：在紙張接近書脊前先淡淡浮現，避免 90 度後才突然看到新圖 */
-.sheet-preview {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0;
-    pointer-events: none;
-    backface-visibility: hidden;
-    transform: translateX(10px) scale(0.998);
-}
-
-.turn-next .sheet-preview {
-    animation: previewNext 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
-}
-
-.turn-prev .sheet-preview {
-    animation: previewPrev 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
-}
-
-/* 下一頁預覽只保留非常淡的提示，不讓它和舊頁混在一起太久
-   （原檔案這組 keyframes 曾重複定義兩次，這裡只保留一份） */
-@keyframes previewNext {
-    0%, 34% { opacity: 0; transform: translateX(10px) scale(0.998); }
-    43% { opacity: 0.08; }
-    49% { opacity: 0.16; transform: translateX(2px) scale(1); }
-    54% { opacity: 0.06; }
-    57%, 100% { opacity: 0; transform: translateX(0) scale(1); }
-}
-
-@keyframes previewPrev {
-    0%, 34% { opacity: 0; transform: translateX(-10px) scale(0.998); }
-    43% { opacity: 0.08; }
-    49% { opacity: 0.16; transform: translateX(-2px) scale(1); }
-    54% { opacity: 0.06; }
-    57%, 100% { opacity: 0; transform: translateX(0) scale(1); }
-}
-
-/* 紙張光影
-   移除 mix-blend-mode：混合模式會讓瀏覽器多一層合成運算，
-   改用純 opacity 動畫的半透明覆蓋，效果接近但成本低很多 */
-
-.sheet-light {
-    position: absolute;
-    inset: 0;
-
-    z-index: 10;
-
-    pointer-events: none;
-
-    opacity: 0;
-
-    backface-visibility: hidden;
-
-    background:
-        linear-gradient(
-            105deg,
-            transparent 12%,
-            rgba(255, 255, 255, 0.10) 34%,
-            rgba(255, 255, 255, 0.55) 50%,
-            rgba(0, 0, 0, 0.16) 71%,
-            transparent 92%
-        );
-}
-
-
-/* 紙張邊緣 */
-
-.sheet-edge {
-    position: absolute;
-
-    top: 0;
-    bottom: 0;
-
-    z-index: 12;
-
-    width: 9px;
-
-    opacity: 0;
-
-    pointer-events: none;
-
-    background:
-        linear-gradient(
-            90deg,
-            #8b847a,
-            #fff,
-            #999186
-        );
-
-    box-shadow:
-        0 0 18px rgba(0, 0, 0, 0.6);
-}
-
-
-/* 紙張陰影層（新增）
-   原本的翻頁陰影是直接在 .turn-next/.turn-prev 上逐幀改變 box-shadow，
-   box-shadow 沒辦法走 GPU 合成層，每一幀都要重繪，是效能負擔最大的地方。
-   改成一個獨立圖層：box-shadow 數值固定不變，只用 opacity 淡入淡出，
-   可以完全交給合成層處理，視覺上仍有陰影浮現/消失的效果。 */
-
-.sheet-shadow {
-    position: absolute;
-    inset: 0;
-
-    z-index: 1;
-
-    pointer-events: none;
-
-    opacity: 0;
-
-    will-change: opacity;
-}
-
-.turn-next .sheet-shadow {
-    box-shadow: 30px 8px 42px rgba(0, 0, 0, 0.45);
-    animation: shadowNext 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
-}
-
-.turn-prev .sheet-shadow {
-    box-shadow: -30px 8px 42px rgba(0, 0, 0, 0.45);
-    animation: shadowPrev 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
-}
-
-@keyframes shadowNext {
-    0%   { opacity: 0; }
-    12%  { opacity: 0.3; }
-    50%  { opacity: 1; }
-    88%  { opacity: 0.25; }
-    100% { opacity: 0; }
-}
-
-@keyframes shadowPrev {
-    0%   { opacity: 0; }
-    12%  { opacity: 0.3; }
-    50%  { opacity: 1; }
-    88%  { opacity: 0.25; }
-    100% { opacity: 0; }
-}
-
-
-/* =====================================================
-   流暢翻頁：帶輕微漂移、抬升與落頁感
-   （box-shadow 已抽離到 .sheet-shadow，這裡只保留
-    transform 與 filter：brightness，兩者對效能友善很多）
-===================================================== */
-
-.turn-next,
-.turn-prev {
-    display: block;
-    will-change: transform;
-}
-
-.turn-next {
-    right: 0;
-    transform-origin: left center;
-    animation: turnNext 860ms cubic-bezier(0.16, 0.84, 0.26, 1) forwards;
+body{
+    font-family:"Microsoft JhengHei",sans-serif;
+    background:#f5f5f5;
+    margin:30px;
 }
 
-.turn-prev {
-    left: 0;
-    transform-origin: right center;
-    animation: turnPrev 860ms cubic-bezier(0.16, 0.84, 0.26, 1) forwards;
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.15);
 }
 
-.turn-next .sheet-front {
-    border-radius: 2px 16px 16px 2px;
-    box-shadow: inset 20px 0 28px rgba(0, 0, 0, 0.10);
+h1{
+    text-align:center;
 }
 
-.turn-next .sheet-back {
-    border-radius: 16px 2px 2px 16px;
+.question{
+    margin:20px 0;
+    padding:15px;
+    border-bottom:1px solid #ddd;
 }
 
-.turn-prev .sheet-front {
-    border-radius: 16px 2px 2px 16px;
-    box-shadow: inset -20px 0 28px rgba(0, 0, 0, 0.10);
+.options{
+    margin-top:10px;
 }
 
-.turn-prev .sheet-back {
-    border-radius: 2px 16px 16px 2px;
+label{
+    margin-right:18px;
+    cursor:pointer;
 }
 
-.turn-next .sheet-edge {
-    right: -4px;
-    animation: edgeNext 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
+button{
+    margin-top:25px;
+    width:100%;
+    padding:15px;
+    font-size:18px;
+    border:none;
+    background:#1976d2;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
 }
 
-.turn-prev .sheet-edge {
-    left: -4px;
-    animation: edgePrev 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
+button:hover{
+    background:#125aa0;
 }
 
-.turn-next .sheet-light {
-    animation: lightNext 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
+.result{
+    margin-top:30px;
+    padding:20px;
+    background:#eef7ff;
+    border-radius:8px;
+    text-align:center;
+    display:none;
 }
 
-.turn-prev .sheet-light {
-    animation: lightPrev 860ms cubic-bezier(0.22, 0.72, 0.28, 1) forwards;
+.result h2{
+    margin:0 0 8px 0;
+    font-size:26px;
 }
 
-/* 往下一頁：右頁向左翻，附帶小幅左漂移與上浮
-   （box-shadow 已移除；filter/brightness 也不再放在這一層，
-    改由內層圖片自己的 oldPageDisappear/newPageReveal 負責明暗變化，
-    避免同一次翻頁疊加兩層 filter 各開一個合成層） */
-@keyframes turnNext {
-    0% {
-        transform: translateX(0) translateY(0) translateZ(1px)
-                   rotateY(0deg) rotateZ(0deg) scale(1);
-    }
-    10% {
-        transform: translateX(-0.5%) translateY(-1px) translateZ(10px)
-                   rotateY(-8deg) rotateZ(-0.05deg) scale(1.002);
-    }
-    28% {
-        transform: translateX(-2.2%) translateY(-4px) translateZ(28px)
-                   rotateY(-38deg) rotateZ(-0.18deg) scale(1.006);
-    }
-    50% {
-        transform: translateX(-4.8%) translateY(-7px) translateZ(52px)
-                   rotateY(-92deg) rotateZ(-0.32deg) scale(1.01);
-    }
-    70% {
-        transform: translateX(-3.3%) translateY(-4px) translateZ(30px)
-                   rotateY(-142deg) rotateZ(-0.16deg) scale(1.006);
-    }
-    88% {
-        transform: translateX(-1.0%) translateY(-1px) translateZ(9px)
-                   rotateY(-173deg) rotateZ(-0.04deg) scale(1.002);
-    }
-    100% {
-        transform: translateX(0) translateY(0) translateZ(1px)
-                   rotateY(-180deg) rotateZ(0deg) scale(1);
-    }
+.result p{
+    font-size:16px;
+    line-height:1.6;
+    color:#333;
+    max-width:600px;
+    margin:0 auto;
 }
 
-/* 往上一頁：鏡像漂移 */
-@keyframes turnPrev {
-    0% {
-        transform: translateX(0) translateY(0) translateZ(1px)
-                   rotateY(0deg) rotateZ(0deg) scale(1);
-    }
-    10% {
-        transform: translateX(0.5%) translateY(-1px) translateZ(10px)
-                   rotateY(8deg) rotateZ(0.05deg) scale(1.002);
-    }
-    28% {
-        transform: translateX(2.2%) translateY(-4px) translateZ(28px)
-                   rotateY(38deg) rotateZ(0.18deg) scale(1.006);
-    }
-    50% {
-        transform: translateX(4.8%) translateY(-7px) translateZ(52px)
-                   rotateY(92deg) rotateZ(0.32deg) scale(1.01);
-    }
-    70% {
-        transform: translateX(3.3%) translateY(-4px) translateZ(30px)
-                   rotateY(142deg) rotateZ(0.16deg) scale(1.006);
-    }
-    88% {
-        transform: translateX(1.0%) translateY(-1px) translateZ(9px)
-                   rotateY(173deg) rotateZ(0.04deg) scale(1.002);
-    }
-    100% {
-        transform: translateX(0) translateY(0) translateZ(1px)
-                   rotateY(180deg) rotateZ(0deg) scale(1);
-    }
+.result img{
+    margin-top:20px;
+    max-width:100%;
+    width:500px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.25);
 }
-
-@keyframes lightNext {
-    0%   { opacity: 0;    transform: translateX(90%); }
-    22%  { opacity: 0.24; }
-    48%  { opacity: 0.68; transform: translateX(2%); }
-    72%  { opacity: 0.22; }
-    100% { opacity: 0;    transform: translateX(-85%); }
-}
-
-@keyframes lightPrev {
-    0%   { opacity: 0;    transform: translateX(-90%); }
-    22%  { opacity: 0.24; }
-    48%  { opacity: 0.68; transform: translateX(-2%); }
-    72%  { opacity: 0.22; }
-    100% { opacity: 0;    transform: translateX(85%); }
-}
-
-@keyframes edgeNext {
-    0%   { opacity: 0;    transform: scaleX(0.45); }
-    28%  { opacity: 0.45; }
-    50%  { opacity: 0.9;  transform: scaleX(1.55); }
-    76%  { opacity: 0.28; }
-    100% { opacity: 0;    transform: scaleX(0.45); }
-}
-
-@keyframes edgePrev {
-    0%   { opacity: 0;    transform: scaleX(0.45); }
-    28%  { opacity: 0.45; }
-    50%  { opacity: 0.9;  transform: scaleX(1.55); }
-    76%  { opacity: 0.28; }
-    100% { opacity: 0;    transform: scaleX(0.45); }
-}
-
-
-
-/* =====================================================
-   自然翻頁交接：翻越書脊後不再殘留前一頁
-   - 前頁影像在接近 90° 前快速、柔和地淡出
-   - 後頁影像在越過書脊後才自然淡入
-   - 避免翻頁快完成時仍看見上一張圖
-   （原本這裡的 filter 同時animate了 blur，blur 的運算成本
-    和圖片像素數量成正比，對整張高解析度圖片逐幀模糊非常吃效能，
-    這裡拿掉 blur，只保留 brightness + 輕微 scale） 
-===================================================== */
-
-.turn-next .sheet-front > img:not(.sheet-preview),
-.turn-prev .sheet-front > img:not(.sheet-preview) {
-    animation: oldPageDisappear 860ms cubic-bezier(0.18, 0.78, 0.25, 1) forwards;
-    will-change: opacity, transform;
-}
-
-.turn-next .sheet-back > img,
-.turn-prev .sheet-back > img {
-    opacity: 0;
-    animation: newPageReveal 860ms cubic-bezier(0.18, 0.78, 0.25, 1) forwards;
-    will-change: opacity, transform;
-}
-
-@keyframes oldPageDisappear {
-    0%   { opacity: 1;    filter: brightness(1);    transform: scale(1); }
-    28%  { opacity: 0.98; filter: brightness(0.99); transform: scale(1.001); }
-    40%  { opacity: 0.82; filter: brightness(0.94); transform: scale(1.002); }
-    48%  { opacity: 0.42; filter: brightness(0.86); transform: scale(1.003); }
-    54%  { opacity: 0.10; filter: brightness(0.78); transform: scale(1.004); }
-    58%, 100% { opacity: 0; filter: brightness(0.74); transform: scale(1.004); }
-}
-
-@keyframes newPageReveal {
-    0%, 48% { opacity: 0;    filter: brightness(0.82); transform: scale(0.997); }
-    54% { opacity: 0.14; filter: brightness(0.88); transform: scale(0.998); }
-    62% { opacity: 0.55; filter: brightness(0.95); transform: scale(0.999); }
-    74% { opacity: 0.88; filter: brightness(0.99); transform: scale(1); }
-    86%, 100% { opacity: 1; filter: brightness(1); transform: scale(1); }
-}
-
-
-/* =====================================================
-   底層左右頁換圖的柔和轉場（取代原本 JS WAAPI 的 crossfadeImage）
-   單純用 opacity CSS 動畫做交叉淡化，不再和上面一整組 CSS
-   keyframes 疊加做幾乎一樣的事，減少同時間的圖層與重繪次數。
-===================================================== */
-
-.page-swap-clone {
-    position: absolute;
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    object-fit: contain;
-
-    pointer-events: none;
-
-    z-index: 7;
-
-    will-change: opacity;
-
-    animation: pageSwapFadeOut 700ms ease forwards;
-}
-
-.page-swap-fade-in {
-    animation: pageSwapFadeIn 700ms ease forwards;
-}
-
-@keyframes pageSwapFadeOut {
-    from { opacity: 1; }
-    to   { opacity: 0; }
-}
-
-@keyframes pageSwapFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-
-/* =====================================================
-   左右點擊區域
-===================================================== */
-
-.click-zone {
-    position: fixed;
-
-    top: 0;
-    bottom: 0;
-
-    width: 16vw;
-
-    z-index: 80;
-
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
-
-    opacity: 0;
-
-    transition: opacity 0.25s ease;
-}
-
-.click-zone:hover {
-    opacity: 1;
-}
-
-.click-zone::after {
-    width: 48px;
-    height: 70px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    color: white;
-
-    font-size: 38px;
-
-    background: rgba(0, 0, 0, 0.35);
-
-    border: 1px solid rgba(255, 255, 255, 0.2);
-
-    backdrop-filter: blur(8px);
-
-    box-shadow:
-        0 7px 22px rgba(0, 0, 0, 0.38);
-}
-
-.left-zone {
-    left: 0;
-
-    justify-content: flex-start;
-
-    background:
-        linear-gradient(
-            90deg,
-            rgba(0, 0, 0, 0.35),
-            transparent
-        );
-}
-
-.left-zone::after {
-    content: "‹";
-
-    margin-left: 14px;
-
-    border-radius: 0 12px 12px 0;
-}
-
-.right-zone {
-    right: 0;
-
-    justify-content: flex-end;
-
-    background:
-        linear-gradient(
-            270deg,
-            rgba(0, 0, 0, 0.35),
-            transparent
-        );
-}
-
-.right-zone::after {
-    content: "›";
-
-    margin-right: 14px;
-
-    border-radius: 12px 0 0 12px;
-}
-
-
-/* =====================================================
-   控制列
-===================================================== */
-
-.controls {
-    position: fixed;
-
-    left: 50%;
-    bottom: 18px;
-
-    z-index: 100;
-
-    transform: translateX(-50%);
-
-    display: flex;
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 9px 14px;
-
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 16px;
-
-    background: rgba(20, 15, 12, 0.72);
-
-    backdrop-filter: blur(12px);
-
-    box-shadow:
-        0 10px 35px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-button {
-    min-width: 120px;
-
-    padding: 11px 18px;
-
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 9px;
-
-    color: white;
-
-    font-size: 16px;
-    font-weight: bold;
-
-    background:
-        linear-gradient(
-            180deg,
-            #8a623f,
-            #5e3f28
-        );
-
-    box-shadow:
-        0 5px 12px rgba(0, 0, 0, 0.32),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-
-    cursor: pointer;
-
-    transition:
-        transform 0.15s ease,
-        filter 0.2s ease,
-        opacity 0.2s ease;
-}
-
-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-
-    filter: brightness(1.15);
-}
-
-button:active:not(:disabled) {
-    transform: scale(0.97);
-}
-
-button:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-}
-
-#pageNo {
-    min-width: 120px;
-
-    color: white;
-
-    text-align: center;
-
-    font-size: 17px;
-    font-weight: bold;
-
-    text-shadow:
-        0 2px 5px rgba(0, 0, 0, 0.8);
-}
-
-
-/* 操作提示 */
-
-.help-text {
-    position: fixed;
-
-    top: 14px;
-    left: 50%;
-
-    z-index: 100;
-
-    transform: translateX(-50%);
-
-    padding: 7px 15px;
-
-    color: rgba(255, 255, 255, 0.88);
-
-    font-size: 13px;
-
-    border-radius: 20px;
-
-    background: rgba(20, 15, 12, 0.58);
-
-    backdrop-filter: blur(8px);
-
-    pointer-events: none;
-
-    transition: opacity 0.5s ease;
-}
-
-
-/* =====================================================
-   手機版
-===================================================== */
-
-@media (max-width: 800px) {
-
-    .book {
-        width: 96vw;
-        height: 72vh;
-    }
-
-    .controls {
-        width: calc(100% - 20px);
-
-        bottom: 10px;
-
-        gap: 7px;
-
-        padding: 7px 8px;
-    }
-
-    button {
-        min-width: 0;
-
-        flex: 1;
-
-        padding: 10px 7px;
-
-        font-size: 14px;
-    }
-
-    #pageNo {
-        min-width: 90px;
-
-        font-size: 14px;
-    }
-
-    .click-zone {
-        width: 11vw;
-    }
-
-    .click-zone::after {
-        display: none;
-    }
-
-    .book-spine {
-        width: 25px;
-    }
-
-    .help-text {
-        width: calc(100% - 24px);
-
-        top: 8px;
-
-        text-align: center;
-
-        font-size: 11px;
-    }
-}
-
-
-/* 手機直向時增加書本高度 */
-
-@media (
-    max-width: 650px
-) and (
-    orientation: portrait
-) {
-
-    .book {
-        width: 98vw;
-        height: 60vh;
-    }
-}
-
-
-/* 減少動畫設定
-   原本只涵蓋 turn-next/turn-prev 少數幾個動畫，其他像是
-   oldPageDisappear、newPageReveal、leftFlowNext/Prev、
-   openBookWidth/closeBookWidth 都沒被涵蓋到。
-   改成全域規則，確保只要使用者開啟「減少動態效果」，
-   頁面上所有動畫都會被一致地縮短，行為更可預期。 */
-
-@media (prefers-reduced-motion: reduce) {
-
-    * {
-        animation-duration: 1ms !important;
-        animation-iteration-count: 1 !important;
-    }
-}
-
-
-
-/* =====================================================
-   單頁封面模式：0.png
-===================================================== */
-.book.cover-mode {
-    width: min(46vw, 750px);
-}
-
-.book.cover-mode .left-page {
-    display: none;
-}
-
-.book.cover-mode .right-page {
-    width: 100%;
-    border-radius: 16px;
-    box-shadow:
-        inset 10px 0 24px rgba(0,0,0,0.10),
-        inset -10px 0 24px rgba(0,0,0,0.10);
-}
-
-.book.cover-mode .book-spine {
-    display: none;
-}
-
-.book.cover-mode::before {
-    left: 1.2%;
-    right: 1.2%;
-}
-
-.book.cover-mode .turning-sheet {
-    width: 100%;
-    right: 0;
-    left: auto;
-}
-
-.book.cover-mode .turn-next {
-    transform-origin: left center;
-}
-
-/* 封面打開/收合時的寬度動畫。
-   這動畫仍會觸發 reflow（width 不可合成），但只在「封面 ↔ 第一組內頁」
-   這個轉場觸發一次，不是每次翻頁都會執行，成本可接受；
-   這裡額外在動畫期間拿掉 drop-shadow 濾鏡，減少疊加的合成成本。 */
-.book.opening-cover,
-.book.closing-cover {
-    filter: none;
-}
-
-.book.opening-cover {
-    animation: openBookWidth 1250ms cubic-bezier(0.22,0.61,0.36,1) forwards;
-}
-
-@keyframes openBookWidth {
-    from { width: min(46vw, 750px); }
-    to   { width: min(92vw, 1500px); }
-}
-
-/* 從第一組內頁退回封面時，書本收合 */
-.book.closing-cover {
-    animation: closeBookWidth 1250ms cubic-bezier(0.22,0.61,0.36,1) forwards;
-}
-
-@keyframes closeBookWidth {
-    from { width: min(92vw, 1500px); }
-    to   { width: min(46vw, 750px); }
-}
-
-@media (max-width: 800px) {
-    .book.cover-mode { width: 48vw; }
-    @keyframes openBookWidth {
-        from { width: 48vw; }
-        to   { width: 96vw; }
-    }
-    @keyframes closeBookWidth {
-        from { width: 96vw; }
-        to   { width: 48vw; }
-    }
-}
-
 </style>
+
 </head>
 
 <body>
 
-<div id="viewer">
+<div class="container">
 
-    <div class="book cover-mode" id="book">
+<h1>你是甚麼特有種?</h1>
 
-        <!-- 固定左頁 -->
-        <div class="page left-page">
-            <img
-                id="leftPhoto"
-                src=""
-                alt="左頁"
-                draggable="false"
-            >
-        </div>
+<div id="survey"></div>
 
-        <!-- 固定右頁 -->
-        <div class="page right-page">
-            <img
-                id="rightPhoto"
-                src="0.png"
-                alt="右頁"
-                draggable="false"
-            >
-        </div>
+<button onclick="calculateScore()">查看角色</button>
 
-        <!-- 翻動紙張 -->
-        <div
-            class="turning-sheet"
-            id="turningSheet"
-        >
-
-            <!-- 紙張正面 -->
-            <div class="sheet-face sheet-front">
-                <img
-                    id="sheetFrontPhoto"
-                    src="0.png"
-                    alt=""
-                    draggable="false"
-                >
-                <img
-                    id="sheetPreviewPhoto"
-                    class="sheet-preview"
-                    src="1.png"
-                    alt=""
-                    draggable="false"
-                >
-
-                <div class="sheet-light"></div>
-                <div class="sheet-edge"></div>
-            </div>
-
-            <!-- 紙張背面 -->
-            <div class="sheet-face sheet-back">
-                <img
-                    id="sheetBackPhoto"
-                    src="1.png"
-                    alt=""
-                    draggable="false"
-                >
-            </div>
-
-            <!-- 翻頁陰影層（獨立於紙張正反面，只做 opacity 動畫） -->
-            <div class="sheet-shadow"></div>
-
-        </div>
-
-        <!-- 書脊 -->
-        <div class="book-spine"></div>
-
-    </div>
-
+<div class="result" id="result">
+    <h2 id="resultTitle"></h2>
+    <p id="resultText"></p>
+    <img id="resultImage" src="" alt="結果圖片">
 </div>
 
-
-<!-- 左右點擊區 -->
-<div
-    class="click-zone left-zone"
-    id="leftZone"
-    title="翻到上一組"
-></div>
-
-<div
-    class="click-zone right-zone"
-    id="rightZone"
-    title="翻到下一組"
-></div>
-
-
-<!-- 操作提示 -->
-<div class="help-text" id="helpText">
-    可使用左右鍵、滑鼠滾輪、拖曳或手機滑動翻書
 </div>
-
-
-<!-- 控制列 -->
-<div class="controls">
-
-    <button
-        id="prevButton"
-        type="button"
-    >
-        ◀ 上一頁
-    </button>
-
-    <span id="pageNo">
-        封面 / 17
-    </span>
-
-    <button
-        id="nextButton"
-        type="button"
-    >
-        下一頁 ▶
-    </button>
-
-</div>
-
 
 <script>
-/* =====================================================
-   圖片清單
-   0.png = 單頁封面
-   1.png 起 = 每兩張為一組雙面內頁
-===================================================== */
-const coverImage = "0.png";
 
-const innerImages = [
-    "1.png", "2.png",
-    "3.png", "4.png",
-    "5.png", "6.png",
-    "7.png", "8.png",
-    "9.png", "10.png",
-    "11.png", "12.png",
-    "13.png", "14.png",
-    "15.png", "16.png",
-    "17.png", "18.png",
-    "19.png", "20.png",
-    "21.png", "22.png",
-    "23.png", "24.png",
-    "25.png", "26.png",
-    "27.png", "28.png",
-    "29.png", "30.png",
-    "31.png", "32.png",
-    "33.png", "34.png",
-    "35.png", "36.png",
-    "37.png", "38.png"
+const questions=[
+"你向來樂於廣結善緣，對結交新朋友一事樂此不疲。",
+"你盡情享受探索那些別出心裁、不熟悉的想法和觀點。",
+"面對截止日期的壓力，你常常感到焦頭爛額，難以按時完成任務。",
+"在與人相處時，你會優先考慮體諒他人的感受，而不是完全直率地表達事實。",
+"你熱衷於參與團隊活動。",
+"你不太在意自己是否能給陌生人留下好印象。",
+"你時常擔心事情會朝著更糟的方向發展。",
+"在社交聚會上，你通常會等待別人先主動介紹自己。",
+"你經常等到最後一刻才開始處理重要的事情。",
+"朋友們通常會形容你是個活潑開朗的人。",
+"做決定時，你更傾向依據客觀事實，而非一時的情感感受。",
+"對於探討世界未來發展或抽象理論的話題，你通常興趣不大。"
 ];
 
-const animationDuration = 860;
+const REVERSE_ITEMS = [2, 5, 7, 8, 11];
 
-/*
-viewIndex = 0  -> 封面 0.png
-viewIndex = 1  -> 1.png + 2.png
-viewIndex = 2  -> 3.png + 4.png
-...
-*/
-let viewIndex = 0;
-let isAnimating = false;
-let wheelLocked = false;
-let pointerStartX = 0;
-let pointerStartY = 0;
-let isPointerDown = false;
-
-const book = document.getElementById("book");
-const leftPhoto = document.getElementById("leftPhoto");
-const rightPhoto = document.getElementById("rightPhoto");
-const turningSheet = document.getElementById("turningSheet");
-const sheetFrontPhoto = document.getElementById("sheetFrontPhoto");
-const sheetPreviewPhoto = document.getElementById("sheetPreviewPhoto");
-const sheetBackPhoto = document.getElementById("sheetBackPhoto");
-const prevButton = document.getElementById("prevButton");
-const nextButton = document.getElementById("nextButton");
-const pageNo = document.getElementById("pageNo");
-const leftZone = document.getElementById("leftZone");
-const rightZone = document.getElementById("rightZone");
-const helpText = document.getElementById("helpText");
-
-const blankPage =
-    "data:image/svg+xml;charset=UTF-8," +
-    encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1400">
-            <defs>
-                <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#eee9df"/>
-                    <stop offset="50%" stop-color="#fffdf8"/>
-                    <stop offset="100%" stop-color="#eee9df"/>
-                </linearGradient>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#paper)"/>
-        </svg>
-    `);
-
-function setImage(img, src) {
-    const finalSrc = src || blankPage;
-
-    // 避免重複指定相同圖片造成瀏覽器重新繪製而產生閃動
-    if (img.dataset.pageSrc === finalSrc) {
-        img.style.display = "block";
-        return;
+const RESULTS = [
+    {
+        max: 1.30,
+        image: "a1.png",
+        title: "大鱗梅氏鯿",
+        text: "本魚為初級淡水魚，喜棲息於平原河川中、下游的潭區或營養豐富的湖沼水域，活動於中上層。屬雜食性，以浮游動物、植物及小型無脊椎動物等為食。"
+    },
+    {
+        max: 1.60,
+        image: "a2.png",
+        title: "台灣水鹿",
+        text: "棲息於海拔1000公尺以上中高海拔的原始森林，多活動於近水源的草地，以樹葉與嫩草為主食。"
+    },
+    {
+        max: 1.90,
+        image: "a3.png",
+        title: "台灣高山田鼠",
+        text: "主要分佈於台灣海拔3,000公尺以上的山區，以高山草原與針葉林邊緣，主食為玉山箭竹與高山芒之嫩筍嫩芽和莖葉。"
+    },
+    {
+        max: 2.20,
+        image: "a4.png",
+        title: "台灣黑熊",
+        text: "偏好海拔1000至2500的闊葉林、針闊葉混和林、針葉林。雜食性(食物以植物為主，當植物食物短缺時會增加捕食動物的機會，相當喜歡蜂蜜)除了交配期和育幼期外通常獨居，不冬眠。"
+    },
+    {
+        max: 2.50,
+        image: "a5.png",
+        title: "台灣藍鵲",
+        text: "主要分布在中、低海拔闊葉林，多成群行動，繁殖季約在每年3月至7月，食範圍包括小型鳥、鼠、蛇、蜥蜴、昆蟲、果實，甚至廚餘剩飯。"
+    },
+    {
+        max: 2.80,
+        image: "a6.png",
+        title: "金絲蛇",
+        text: "主要分布於北部500至1000的山區潮濕環境，以蛙類、蝌蚪為食，日行性，卵生。"
+    },
+    {
+        max: 3.10,
+        image: "a7.png",
+        title: "台灣寬尾鳳蝶",
+        text: "分布海拔1000至2000山區，幼蟲以台灣檫樹樹葉為食，雄性成蟲吸水，雌性成蟲在台灣檫樹產卵或附近訪花(吸花蜜)。"
+    },
+    {
+        max: 3.40,
+        image: "a8.png",
+        title: "橙腹樹蛙",
+        text: "中低海拔的森林環境，繁殖期以春夏兩季為主，蝌蚪主食為藻類、落葉，成蛙主食為小型無脊椎動物。"
+    },
+    {
+        max: 3.70,
+        image: "a9.png",
+        title: "台灣長耳蝠",
+        text: "分布於海拔1,500公尺以上之中、高海拔山區森林中，夜行性，以小型昆蟲為食。"
+    },
+    {
+        max: 4.01,
+        image: "a10.png",
+        title: "台灣蔁珊瑚",
+        text: "通常生長在珊瑚礁斜坡下段與沙地交界處，濾食浮游生物，珊瑚體為多口，成體行游離生活。"
     }
+];
 
-    img.src = finalSrc;
-    img.dataset.pageSrc = finalSrc;
-    img.style.display = "block";
-    img.style.opacity = "1";
-}
 
-/*
- * 柔和換圖：保留舊圖做短暫疊影，再讓新圖淡入。
- * 這樣翻頁跨過書脊時，底層前後頁不會突然跳成另一張圖。
- *
- * 原本這裡是用 JS Web Animations API 對 transform/opacity/filter(含blur)
- * 做一整組多階段 keyframe 動畫，和翻頁紙張本身的 CSS keyframes 幾乎是
- * 同時間做很相近的事，疊加起來很吃效能。改成單純的 opacity CSS 動畫
- * (.page-swap-clone / .page-swap-fade-in)，效果接近但成本低很多。
- */
-function crossfadeImage(img, src, duration = 700) {
-    const finalSrc = src || blankPage;
+const survey=document.getElementById("survey");
 
-    if (img.dataset.pageSrc === finalSrc) return;
+let html="";
 
-    const parent = img.parentElement;
-    if (!parent) {
-        setImage(img, src);
-        return;
-    }
+questions.forEach((q,index)=>{
 
-    // 清除前一次尚未完成的轉場殘影
-    parent.querySelectorAll(".page-swap-clone").forEach(el => el.remove());
+    html+=`
+<div class="question">
+<b>第${index+1}題：</b>${q}
+<div class="options">
+`;
 
-    // 保留目前頁面，讓它先慢慢淡化消失
-    const oldImg = img.cloneNode(false);
-    oldImg.removeAttribute("id");
-    oldImg.className = "page-swap-clone";
-    oldImg.style.animationDuration = duration + "ms";
-    parent.appendChild(oldImg);
+    for(let i=1;i<=4;i++){
 
-    // 下一頁換圖並淡入
-    img.src = finalSrc;
-    img.dataset.pageSrc = finalSrc;
-    img.style.display = "block";
-    img.style.opacity = "0";
-    img.classList.remove("page-swap-fade-in");
-    void img.offsetWidth;
-    img.style.animationDuration = duration + "ms";
-    img.classList.add("page-swap-fade-in");
+        let text="";
 
-    window.setTimeout(() => oldImg.remove(), duration + 30);
-    window.setTimeout(() => {
-        img.classList.remove("page-swap-fade-in");
-        img.style.opacity = "1";
-    }, duration + 30);
-}
-
-function getSpread(view) {
-    const start = (view - 1) * 2;
-    return {
-        left: innerImages[start] || "",
-        right: innerImages[start + 1] || ""
-    };
-}
-
-function totalViews() {
-    return 1 + Math.ceil(innerImages.length / 2);
-}
-
-function resetTurningSheet() {
-    turningSheet.classList.remove("turn-next", "turn-prev");
-    turningSheet.style.display = "none";
-    void turningSheet.offsetWidth;
-}
-
-function renderCurrentView() {
-    book.classList.remove("opening-cover", "closing-cover");
-
-    if (viewIndex === 0) {
-        book.classList.add("cover-mode");
-        setImage(rightPhoto, coverImage);
-        setImage(leftPhoto, "");
-    } else {
-        book.classList.remove("cover-mode");
-        const spread = getSpread(viewIndex);
-        setImage(leftPhoto, spread.left);
-        setImage(rightPhoto, spread.right);
-    }
-
-    updateControls();
-    preloadNearbyImages();
-}
-
-function updateControls() {
-    if (viewIndex === 0) {
-        pageNo.textContent = `封面 / ${innerImages.length + 1}`;
-    } else {
-        const startPage = (viewIndex - 1) * 2 + 1;
-        const endPage = Math.min(startPage + 1, innerImages.length);
-        pageNo.textContent = `${startPage}－${endPage} / ${innerImages.length}`;
-    }
-
-    const canGoPrev = viewIndex > 0;
-    const canGoNext = viewIndex < totalViews() - 1;
-
-    prevButton.disabled = !canGoPrev || isAnimating;
-    nextButton.disabled = !canGoNext || isAnimating;
-    leftZone.style.pointerEvents = canGoPrev && !isAnimating ? "auto" : "none";
-    rightZone.style.pointerEvents = canGoNext && !isAnimating ? "auto" : "none";
-}
-
-function restartLeftFlow(className) {
-    const leftPage = leftPhoto.closest(".left-page");
-    leftPage.classList.remove("left-flow-next", "left-flow-prev");
-    void leftPage.offsetWidth;
-    leftPage.classList.add(className);
-}
-
-function clearLeftFlow() {
-    const leftPage = leftPhoto.closest(".left-page");
-    leftPage.classList.remove("left-flow-next", "left-flow-prev");
-}
-
-/*
- * 用 animationend 事件驅動翻頁流程的「最終狀態切換」，
- * 取代原本用 setTimeout(animationDuration) 猜測動畫何時結束。
- * setTimeout 在分頁被瀏覽器節流（例如切到背景分頁）時會延後觸發，
- * 但 CSS 動畫本身不受此限，兩者容易脫節、導致狀態卡住。
- * 這裡改成監聽 turningSheet 自己的 turnNext/turnPrev 動畫結束，
- * 並保留一個安全逾時（fallback）避免極端情況下事件沒有觸發。
- */
-function onTurnAnimationDone(callback) {
-    let done = false;
-
-    function finish() {
-        if (done) return;
-        done = true;
-        turningSheet.removeEventListener("animationend", handler);
-        callback();
-    }
-
-    function handler(event) {
-        if (event.target !== turningSheet) return;
-        if (event.animationName !== "turnNext" && event.animationName !== "turnPrev") return;
-        finish();
-    }
-
-    turningSheet.addEventListener("animationend", handler);
-    window.setTimeout(finish, animationDuration + 150);
-}
-
-function nextView() {
-    if (isAnimating || viewIndex >= totalViews() - 1) return;
-
-    isAnimating = true;
-    updateControls();
-    resetTurningSheet();
-
-    const isCoverOpen = viewIndex === 0;
-
-    if (isCoverOpen) {
-        /* 封面 0.png 打開到 1.png / 2.png */
-        const nextSpread = getSpread(1);
-
-        setImage(sheetFrontPhoto, coverImage);
-        setImage(sheetPreviewPhoto, nextSpread.left);
-        setImage(sheetBackPhoto, nextSpread.left);
-
-        window.setTimeout(() => {
-            if (isAnimating) crossfadeImage(rightPhoto, nextSpread.right, 760);
-        }, Math.round(animationDuration * 0.12));
-
-        restartLeftFlow("left-flow-next");
-
-        book.classList.remove("cover-mode");
-        book.classList.add("opening-cover");
-
-        turningSheet.style.width = "50%";
-        turningSheet.style.right = "0";
-        turningSheet.style.left = "auto";
-        turningSheet.style.display = "block";
-        void turningSheet.offsetWidth;
-        turningSheet.classList.add("turn-next");
-
-        onTurnAnimationDone(() => {
-            viewIndex = 1;
-            turningSheet.style.width = "";
-            resetTurningSheet();
-            clearLeftFlow();
-            isAnimating = false;
-            renderCurrentView();
-        });
-
-        return;
-    }
-
-    const currentSpread = getSpread(viewIndex);
-    const nextSpread = getSpread(viewIndex + 1);
-
-    setImage(sheetFrontPhoto, currentSpread.right);
-    setImage(sheetPreviewPhoto, nextSpread.left);
-    setImage(sheetBackPhoto, nextSpread.left);
-
-    // 右底頁在翻頁開始後稍微延遲換入，讓紙張抬起時不會立刻露出新圖。
-    window.setTimeout(() => {
-        if (isAnimating) crossfadeImage(rightPhoto, nextSpread.right, 760);
-    }, Math.round(animationDuration * 0.12));
-
-    restartLeftFlow("left-flow-next");
-
-    // 紙張翻過書脊後，背面已經顯示 nextSpread.left。
-    // 此時翻頁紙張正好遮住左底頁，所以直接把左底頁換成同一張，
-    // 動畫結束移除翻頁紙張時不會再發生第二次跳圖。
-    window.setTimeout(() => {
-        if (isAnimating) setImage(leftPhoto, nextSpread.left);
-    }, Math.round(animationDuration * 0.60));
-
-    turningSheet.style.width = "";
-    turningSheet.style.right = "0";
-    turningSheet.style.left = "auto";
-    turningSheet.style.display = "block";
-    void turningSheet.offsetWidth;
-    turningSheet.classList.add("turn-next");
-
-    onTurnAnimationDone(() => {
-        viewIndex++;
-        resetTurningSheet();
-        clearLeftFlow();
-        isAnimating = false;
-        renderCurrentView();
-    });
-}
-
-function prevView() {
-    if (isAnimating || viewIndex <= 0) return;
-
-    isAnimating = true;
-    updateControls();
-    resetTurningSheet();
-
-    if (viewIndex === 1) {
-        /* 第一組內頁退回單頁封面 */
-        const currentSpread = getSpread(1);
-
-        setImage(sheetFrontPhoto, currentSpread.left);
-        setImage(sheetPreviewPhoto, coverImage);
-        setImage(sheetBackPhoto, coverImage);
-
-        window.setTimeout(() => {
-            if (isAnimating) crossfadeImage(leftPhoto, "", 680);
-        }, Math.round(animationDuration * 0.12));
-
-        window.setTimeout(() => {
-            if (isAnimating) crossfadeImage(rightPhoto, coverImage, 720);
-        }, Math.round(animationDuration * 0.50));
-
-        restartLeftFlow("left-flow-prev");
-
-        book.classList.add("closing-cover");
-
-        turningSheet.style.width = "50%";
-        turningSheet.style.left = "0";
-        turningSheet.style.right = "auto";
-        turningSheet.style.display = "block";
-        void turningSheet.offsetWidth;
-        turningSheet.classList.add("turn-prev");
-
-        onTurnAnimationDone(() => {
-            viewIndex = 0;
-            turningSheet.style.width = "";
-            resetTurningSheet();
-            clearLeftFlow();
-            isAnimating = false;
-            renderCurrentView();
-        });
-
-        return;
-    }
-
-    const currentSpread = getSpread(viewIndex);
-    const prevSpread = getSpread(viewIndex - 1);
-
-    setImage(sheetFrontPhoto, currentSpread.left);
-    setImage(sheetPreviewPhoto, prevSpread.right);
-    setImage(sheetBackPhoto, prevSpread.right);
-
-    // 左底頁先以短暫交疊方式換入上一組左頁。
-    window.setTimeout(() => {
-        if (isAnimating) crossfadeImage(leftPhoto, prevSpread.left, 760);
-    }, Math.round(animationDuration * 0.12));
-
-    // 紙張翻過書脊後，背面已經顯示 prevSpread.right。
-    // 趁翻頁紙張遮住右底頁時直接換成同一張，落頁時就完全連續。
-    window.setTimeout(() => {
-        if (isAnimating) setImage(rightPhoto, prevSpread.right);
-    }, Math.round(animationDuration * 0.60));
-
-    restartLeftFlow("left-flow-prev");
-
-    turningSheet.style.width = "";
-    turningSheet.style.left = "0";
-    turningSheet.style.right = "auto";
-    turningSheet.style.display = "block";
-    void turningSheet.offsetWidth;
-    turningSheet.classList.add("turn-prev");
-
-    onTurnAnimationDone(() => {
-        viewIndex--;
-        resetTurningSheet();
-        clearLeftFlow();
-        isAnimating = false;
-        renderCurrentView();
-    });
-}
-
-function preload(src) {
-    if (!src) return;
-    const img = new Image();
-    img.src = src;
-}
-
-function preloadNearbyImages() {
-    preload(coverImage);
-    if (viewIndex > 0) {
-        const start = (viewIndex - 1) * 2;
-        for (let i = start - 2; i <= start + 5; i++) {
-            if (innerImages[i]) preload(innerImages[i]);
+        switch(i){
+            case 1:text="不同意";break;
+            case 2:text="有點不同意";break;
+            case 3:text="有點同意";break;
+            case 4:text="同意";break;
         }
-    } else {
-        innerImages.slice(0, 4).forEach(preload);
-    }
-}
 
-prevButton.addEventListener("click", prevView);
-nextButton.addEventListener("click", nextView);
-leftZone.addEventListener("click", prevView);
-rightZone.addEventListener("click", nextView);
-
-document.addEventListener("keydown", (event) => {
-    if (isAnimating) return;
-
-    switch (event.key) {
-        case "ArrowRight":
-        case "PageDown":
-        case " ":
-            event.preventDefault();
-            nextView();
-            break;
-        case "ArrowLeft":
-        case "PageUp":
-            event.preventDefault();
-            prevView();
-            break;
-        case "Home":
-            event.preventDefault();
-            viewIndex = 0;
-            renderCurrentView();
-            break;
-        case "End":
-            event.preventDefault();
-            viewIndex = totalViews() - 1;
-            renderCurrentView();
-            break;
-    }
-});
-
-document.addEventListener("wheel", (event) => {
-    event.preventDefault();
-    if (wheelLocked || isAnimating) return;
-
-    const movement = Math.abs(event.deltaX) > Math.abs(event.deltaY)
-        ? event.deltaX
-        : event.deltaY;
-
-    if (movement === 0) return;
-
-    wheelLocked = true;
-    window.setTimeout(() => wheelLocked = false, animationDuration + 100);
-
-    movement > 0 ? nextView() : prevView();
-}, { passive: false });
-
-/*
- * 手勢輸入統一改用 Pointer Events。
- * 原本同時存在 touchstart/touchend 與 pointerdown/pointerup 兩套邏輯，
- * 在支援 Pointer Events 的裝置（含手機瀏覽器）上兩者會同時觸發，
- * 等於同一次滑動被判斷兩次（雖然靠 isAnimating 擋掉了第二次，
- * 但邏輯上是多餘的）。Pointer Events 本身已涵蓋觸控與滑鼠，
- * 這裡拿掉重複的 touch 事件監聽。
- */
-document.addEventListener("pointerdown", (event) => {
-    if (event.target.closest(".controls")) return;
-    pointerStartX = event.clientX;
-    pointerStartY = event.clientY;
-    isPointerDown = true;
-});
-
-document.addEventListener("pointerup", (event) => {
-    if (!isPointerDown || isAnimating) {
-        isPointerDown = false;
-        return;
+        html+=`
+<label>
+<input type="radio" name="q${index}" value="${i}">
+${i} ${text}
+</label>
+`;
     }
 
-    isPointerDown = false;
-    const diffX = pointerStartX - event.clientX;
-    const diffY = pointerStartY - event.clientY;
+    html+=`
+</div>
+</div>
+`;
 
-    if (Math.abs(diffX) < 80 || Math.abs(diffY) > Math.abs(diffX)) return;
-    diffX > 0 ? nextView() : prevView();
 });
 
-function handleImageError(event) {
-    console.error("圖片載入失敗：", event.target.src);
+survey.innerHTML=html;
+
+function getResultByAverage(avg){
+    for(const r of RESULTS){
+        if(avg <= r.max){
+            return r;
+        }
+    }
+    return RESULTS[RESULTS.length-1];
 }
 
-[leftPhoto, rightPhoto, sheetFrontPhoto, sheetPreviewPhoto, sheetBackPhoto].forEach(img => {
-    img.addEventListener("error", handleImageError);
-});
+function calculateScore(){
 
-window.setTimeout(() => {
-    helpText.style.opacity = "0";
-}, 5000);
+    let total=0;
 
-function initializeBook() {
-    viewIndex = 0;
-    resetTurningSheet();
-    renderCurrentView();
+    for(let i=0;i<questions.length;i++){
 
-    // 提前預載第一組內頁圖片，避免打開封面那瞬間網路較慢時出現空白。
-    preload(innerImages[0]);
-    preload(innerImages[1]);
+        const ans=document.querySelector(`input[name=q${i}]:checked`);
+
+        if(!ans){
+            alert(`還有沒作答的o，仔細檢查看看?`);
+            return;
+        }
+
+        let value=Number(ans.value);
+
+        if(REVERSE_ITEMS.includes(i)){
+            value = 5 - value;
+        }
+
+        total += value;
+
+    }
+
+    const avg = total / questions.length;
+    const result = getResultByAverage(avg);
+
+    document.getElementById("resultTitle").textContent = result.title;
+    document.getElementById("resultText").textContent = result.text;
+    document.getElementById("resultImage").src = result.image;
+    document.getElementById("resultImage").alt = result.title;
+
+    document.getElementById("result").style.display="block";
+
+    document.getElementById("result").scrollIntoView({behavior:"smooth"});
 }
 
-initializeBook();
 </script>
 
 </body>
