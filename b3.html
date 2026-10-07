@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 
@@ -105,6 +104,7 @@ button:hover{
 
 <button onclick="calculateScore()">查看角色</button>
 
+
 <div class="result" id="result">
 
     <h2 id="resultTitle"></h2>
@@ -121,9 +121,9 @@ button:hover{
 <script>
 
 
-// ==============================
+// ========================================
 // 題目
-// ==============================
+// ========================================
 
 const questions = [
 
@@ -154,286 +154,103 @@ const questions = [
 ];
 
 
-// ==============================
-// 反向計分題目
-// ==============================
+// ========================================
+// 反向計分
+// ========================================
 
-// 注意：陣列從 0 開始
+// 0 = 第1題
+// 1 = 第2題
 // 2 = 第3題
+// 3 = 第4題
+// 4 = 第5題
 // 5 = 第6題
+// 6 = 第7題
 // 7 = 第8題
 // 8 = 第9題
+// 9 = 第10題
+// 10 = 第11題
 // 11 = 第12題
 
 const REVERSE_ITEMS = [2, 5, 7, 8, 11];
 
 
-// ==============================
+// ========================================
 // 結果
-// ==============================
-//
-// 圖片全部放在 images 資料夾
-//
-// 例如：
-// images/a12.png
-// images/a13.png
-// images/a14.png
-//
-// 所以這裡使用：
-// "images/a12.png"
-//
-
+// 只設定 12～18 分
+// 圖片直接放在 index.html 同一層
+// ========================================
 
 const RESULTS = {
 
     12: {
-        image: "images/a12.png",
+        image: "a12.png",
         title: "朱氏隱姬花天牛",
         text: "X。"
     },
 
     13: {
-        image: "images/a13.png",
+        image: "a13.png",
         title: "金絲蛇",
         text: "主要分布於北部500至1000的山區潮濕環境，以蛙類、蝌蚪為食，日行性，卵生。"
     },
 
     14: {
-        image: "images/a14.png",
+        image: "a14.png",
         title: "斯文豪氏攀蜥",
         text: "X"
     },
 
     15: {
-        image: "images/a15.png",
+        image: "a15.png",
         title: "台灣寬尾鳳蝶",
         text: "分布海拔1000至2000山區，幼蟲以台灣檫樹樹葉為食，雄性成蟲吸水，雌性成蟲在台灣檫樹產卵或附近訪花(吸花蜜)。"
     },
 
     16: {
-        image: "images/a16.png",
+        image: "a16.png",
         title: "橙腹樹蛙",
         text: "中低海拔的森林環境，繁殖期以春夏兩季為主，蝌蚪主食為藻類、落葉，成蛙主食為小型無脊椎動物。"
     },
 
     17: {
-        image: "images/a17.png",
+        image: "a17.png",
         title: "蘭嶼大葉螽",
         text: "X"
     },
 
     18: {
-        image: "images/a18.png",
+        image: "a18.png",
         title: "蘭嶼筒胸竹節蟲",
         text: "請填入18分的說明。"
-    },
-
-    19: {
-        image: "images/a19.png",
-        title: "大鱗梅氏鯿",
-        text: "本魚為初級淡水魚，喜棲息於平原河川中、下游的潭區或營養豐富的湖沼水域，活動於中上層。屬雜食性，以浮游動物、植物及小型無脊椎動物等為食。"
-    },
-
-    20: {
-        image: "images/a20.png",
-        title: "火冠戴菊鳥",
-        text: "X"
-    },
-
-    21: {
-        image: "images/a21.png",
-        title: "台灣水鹿",
-        text: "棲息於海拔1000公尺以上中高海拔的原始森林，多活動於近水源的草地，以樹葉與嫩草為主食。"
-    },
-
-    22: {
-        image: "images/a22.png",
-        title: "台灣長耳蝠",
-        text: "分布於海拔1,500公尺以上之中、高海拔山區森林中，夜行性，以小型昆蟲為食。"
-    },
-
-    23: {
-        image: "images/a23.png",
-        title: "台灣高山田鼠",
-        text: "主要分佈於台灣海拔3,000公尺以上的山區，以高山草原與針葉林邊緣，主食為玉山箭竹與高山芒之嫩筍嫩芽和莖葉。"
-    },
-
-    24: {
-        image: "images/a24.png",
-        title: "梅花鹿",
-        text: "棲息於海拔1000公尺以上中高海拔的原始森林，多活動於近水源的草地，以樹葉與嫩草為主食。"
-    },
-
-    25: {
-        image: "images/a25.png",
-        title: "台灣黑熊",
-        text: "偏好海拔1000至2500的闊葉林、針闊葉混和林、針葉林。雜食性(食物以植物為主，當植物食物短缺時會增加捕食動物的機會，相當喜歡蜂蜜)。除了交配期和育幼期外通常獨居，不冬眠。"
-    },
-
-    26: {
-        image: "images/a26.png",
-        title: "台灣蔁珊瑚",
-        text: "通常生長在珊瑚礁斜坡下段與沙地交界處，濾食浮游生物，珊瑚體為多口，成體行游離生活。"
-    },
-
-    27: {
-        image: "images/a27.png",
-        title: "台灣藍鵲",
-        text: "主要分布在中、低海拔闊葉林，多成群行動，繁殖季約在每年3月至7月，食範圍包括小型鳥、鼠、蛇、蜥蜴、昆蟲、果實，甚至廚餘剩飯。"
-    },
-
-    28: {
-        image: "images/a28.png",
-        title: "台灣獼猴",
-        text: "X"
-    },
-
-    29: {
-        image: "images/a29.png",
-        title: "鼬獾",
-        text: "X"
-    },
-
-    30: {
-        image: "images/a30.png",
-        title: "冠羽畫眉",
-        text: "X"
-    },
-
-    31: {
-        image: "images/a31.png",
-        title: "黑長尾雉",
-        text: "X"
-    },
-
-    32: {
-        image: "images/a32.png",
-        title: "台灣雲豹",
-        text: "X"
-    },
-
-    33: {
-        image: "images/a33.png",
-        title: "小靈貓",
-        text: "X"
-    },
-
-    34: {
-        image: "images/a34.png",
-        title: "結果34",
-        text: "X"
-    },
-
-    35: {
-        image: "images/a35.png",
-        title: "結果35",
-        text: "X。"
-    },
-
-    36: {
-        image: "images/a36.png",
-        title: "結果36",
-        text: "X"
-    },
-
-    37: {
-        image: "images/a37.png",
-        title: "結果37",
-        text: "X"
-    },
-
-    38: {
-        image: "images/a38.png",
-        title: "結果38",
-        text: "X"
-    },
-
-    39: {
-        image: "images/a39.png",
-        title: "結果39",
-        text: "X"
-    },
-
-    40: {
-        image: "images/a40.png",
-        title: "結果40",
-        text: "X"
-    },
-
-    41: {
-        image: "images/a41.png",
-        title: "結果41",
-        text: "X"
-    },
-
-    42: {
-        image: "images/a42.png",
-        title: "結果42",
-        text: "X"
-    },
-
-    43: {
-        image: "images/a43.png",
-        title: "結果43",
-        text: "X"
-    },
-
-    44: {
-        image: "images/a44.png",
-        title: "結果44",
-        text: "X"
-    },
-
-    45: {
-        image: "images/a45.png",
-        title: "結果45",
-        text: "X"
-    },
-
-    46: {
-        image: "images/a46.png",
-        title: "結果46",
-        text: "X"
-    },
-
-    47: {
-        image: "images/a47.png",
-        title: "結果47",
-        text: "X"
-    },
-
-    48: {
-        image: "images/a48.png",
-        title: "結果48",
-        text: "X"
     }
 
 };
 
 
-// ==============================
+// ========================================
 // 建立題目
-// ==============================
+// ========================================
 
 const survey = document.getElementById("survey");
 
 let html = "";
 
 
-questions.forEach((q,index) => {
+questions.forEach((q, index) => {
 
     html += `
     <div class="question">
 
-        <b>第${index+1}題：</b>${q}
+        <b>第${index + 1}題：</b>${q}
 
         <div class="options">
     `;
 
 
-    for(let i=1; i<=4; i++){
+    for(let i = 1; i <= 4; i++){
 
         let text = "";
+
 
         switch(i){
 
@@ -475,6 +292,7 @@ questions.forEach((q,index) => {
 
     html += `
         </div>
+
     </div>
     `;
 
@@ -484,24 +302,24 @@ questions.forEach((q,index) => {
 survey.innerHTML = html;
 
 
-// ==============================
+// ========================================
 // 計算分數
-// ==============================
+// ========================================
 
 function calculateScore(){
 
     let total = 0;
 
 
-    for(let i=0; i<questions.length; i++){
+    // 檢查所有題目
+    for(let i = 0; i < questions.length; i++){
 
-        const ans =
-            document.querySelector(
-                `input[name=q${i}]:checked`
-            );
+        const ans = document.querySelector(
+            `input[name="q${i}"]:checked`
+        );
 
 
-        // 如果有題目沒有回答
+        // 有題目沒有回答
         if(!ans){
 
             alert("還有沒作答的o，仔細檢查看看?");
@@ -527,19 +345,38 @@ function calculateScore(){
     }
 
 
-    // 找到對應結果
+    // ========================================
+    // 取得結果
+    // ========================================
+
     const result = RESULTS[total];
 
 
+    // 如果分數不是 12～18
+    if(!result){
+
+        alert("你的分數目前不在12～18分的結果範圍內。");
+
+        return;
+
+    }
+
+
+    // ========================================
     // 顯示結果
+    // ========================================
+
     document.getElementById("resultTitle").textContent =
         result.title;
+
 
     document.getElementById("resultText").textContent =
         result.text;
 
+
     document.getElementById("resultImage").src =
         result.image;
+
 
     document.getElementById("resultImage").alt =
         result.title;
@@ -561,4 +398,3 @@ function calculateScore(){
 </body>
 
 </html>
-```
