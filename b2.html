@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>人格特質問卷</title>
+<title>你是甚麼特有種?</title>
 
 <style>
 body{
@@ -61,9 +61,21 @@ button:hover{
     padding:20px;
     background:#eef7ff;
     border-radius:8px;
-    font-size:22px;
     text-align:center;
     display:none;
+}
+
+.result h2{
+    margin:0 0 8px 0;
+    font-size:26px;
+}
+
+.result p{
+    font-size:16px;
+    line-height:1.6;
+    color:#333;
+    max-width:600px;
+    margin:0 auto;
 }
 
 .result img{
@@ -81,106 +93,186 @@ button:hover{
 
 <div class="container">
 
-<h1>人格特質問卷</h1>
+<h1>你是甚麼特有種?</h1>
 
 <div id="survey"></div>
 
 <button onclick="calculateScore()">查看角色</button>
 
-<div class="result" id="result"></div>
+<div class="result" id="result">
+    <h2 id="resultTitle"></h2>
+    <p id="resultText"></p>
+    <img id="resultImage" src="" alt="結果圖片">
+</div>
 
 </div>
 
 <script>
 
 const questions=[
-"你向來樂於廣結善緣，對結交新朋友一事樂此不疲。",
-"你盡情享受探索那些別出心裁、不熟悉的想法和觀點。",
-"面對截止日期的壓力，你常常感到焦頭爛額，難以按時完成任務。",
-"在與人相處時，你會優先考慮體諒他人的感受，而不是完全直率地表達事實。",
-"你熱衷於參與團隊活動。",
-"你不太在意自己是否能給陌生人留下好印象。",
-"你時常擔心事情會朝著更糟的方向發展。",
-"在社交聚會上，你通常會等待別人先主動介紹自己。",
-"你經常等到最後一刻才開始處理重要的事情。",
-"朋友們通常會形容你是個活潑開朗的人。",
-"做決定時，你更傾向依據客觀事實，而非一時的情感感受。",
-"對於探討世界未來發展或抽象理論的話題，你通常興趣不大。"
+"比起離群索居，你更喜歡與同類互相照應",
+"你享受獨自探索棲地外的環境，而非待在舒適圈",
+"面對天敵時，你經常感到慌亂，難以專注思考策略",
+"在與同伴相處時，你會優先考慮他人的處境，而不是自掃門前雪",
+"你熱衷與同伴互相幫助",
+"你不太在意自己是否會給新成員留下好印象。",
+"你時常擔心自己會遭到天敵追獵。",
+"你不喜歡在族群中擔任領導者",
+"你經常等到危險到來時才後悔莫及。",
+"你通常以正面心態看事情",
+"做決定時，你會為長遠情況作出判斷，而非一時的突發狀況",
+"對於探討未來或杞人憂天話題，你通常興趣不大。"
 ];
+
+const REVERSE_ITEMS = [2, 5, 7, 8, 11];
+
+const RESULTS = [
+    {
+        max: 1.30,
+        image: "a1.jpg",
+        title: "大鱗梅氏鯿",
+        text: "本魚為初級淡水魚，喜棲息於平原河川中、下游的潭區或營養豐富的湖沼水域，活動於中上層。屬雜食性，以浮游動物、植物及小型無脊椎動物等為食。"
+    },
+    {
+        max: 1.60,
+        image: "a2.jpg",
+        title: "台灣水鹿",
+        text: "棲息於海拔1000公尺以上中高海拔的原始森林，多活動於近水源的草地，以樹葉與嫩草為主食。"
+    },
+    {
+        max: 1.90,
+        image: "a3.jpg",
+        title: "台灣高山田鼠",
+        text: "主要分佈於台灣海拔3,000公尺以上的山區，以高山草原與針葉林邊緣，主食為玉山箭竹與高山芒之嫩筍嫩芽和莖葉。"
+    },
+    {
+        max: 2.20,
+        image: "a4.png",
+        title: "台灣黑熊",
+        text: "偏好海拔1000至2500的闊葉林、針闊葉混和林、針葉林。雜食性(食物以植物為主，當植物食物短缺時會增加捕食動物的機會，相當喜歡蜂蜜)除了交配期和育幼期外通常獨居，不冬眠。"
+    },
+    {
+        max: 2.50,
+        image: "a5.png",
+        title: "台灣藍鵲",
+        text: "主要分布在中、低海拔闊葉林，多成群行動，繁殖季約在每年3月至7月，食範圍包括小型鳥、鼠、蛇、蜥蜴、昆蟲、果實，甚至廚餘剩飯。"
+    },
+    {
+        max: 2.80,
+        image: "a6.png",
+        title: "金絲蛇",
+        text: "主要分布於北部500至1000的山區潮濕環境，以蛙類、蝌蚪為食，日行性，卵生。"
+    },
+    {
+        max: 3.10,
+        image: "a7.png",
+        title: "台灣寬尾鳳蝶",
+        text: "分布海拔1000至2000山區，幼蟲以台灣檫樹樹葉為食，雄性成蟲吸水，雌性成蟲在台灣檫樹產卵或附近訪花(吸花蜜)。"
+    },
+    {
+        max: 3.40,
+        image: "a8.png",
+        title: "橙腹樹蛙",
+        text: "中低海拔的森林環境，繁殖期以春夏兩季為主，蝌蚪主食為藻類、落葉，成蛙主食為小型無脊椎動物。"
+    },
+    {
+        max: 3.70,
+        image: "a9.png",
+        title: "台灣長耳蝠",
+        text: "分布於海拔1,500公尺以上之中、高海拔山區森林中，夜行性，以小型昆蟲為食。"
+    },
+    {
+        max: 4.01,
+        image: "a10.png",
+        title: "台灣蔁珊瑚",
+        text: "通常生長在珊瑚礁斜坡下段與沙地交界處，濾食浮游生物，珊瑚體為多口，成體行游離生活。"
+    }
+];
+
 
 const survey=document.getElementById("survey");
 
+let html="";
+
 questions.forEach((q,index)=>{
 
-let html=`
+    html+=`
 <div class="question">
 <b>第${index+1}題：</b>${q}
 <div class="options">
 `;
 
-for(let i=1;i<=4;i++){
+    for(let i=1;i<=4;i++){
 
-let text="";
+        let text="";
 
-switch(i){
-    case 1:text="不同意";break;
-    case 2:text="有點不同意";break;
-    case 3:text="有點同意";break;
-    case 4:text="同意";break;
-}
+        switch(i){
+            case 1:text="不同意";break;
+            case 2:text="有點不同意";break;
+            case 3:text="有點同意";break;
+            case 4:text="同意";break;
+        }
 
-html+=`
+        html+=`
 <label>
 <input type="radio" name="q${index}" value="${i}">
 ${i} ${text}
 </label>
 `;
-}
+    }
 
-html+=`
+    html+=`
 </div>
 </div>
 `;
-
-survey.innerHTML+=html;
 
 });
 
+survey.innerHTML=html;
+
+function getResultByAverage(avg){
+    for(const r of RESULTS){
+        if(avg <= r.max){
+            return r;
+        }
+    }
+    return RESULTS[RESULTS.length-1];
+}
+
 function calculateScore(){
 
-let total=0;
+    let total=0;
 
-for(let i=0;i<questions.length;i++){
+    for(let i=0;i<questions.length;i++){
 
-const ans=document.querySelector(`input[name=q${i}]:checked`);
+        const ans=document.querySelector(`input[name=q${i}]:checked`);
 
-if(!ans){
-    alert(`第 ${i+1} 題尚未作答`);
-    return;
-}
+        if(!ans){
+            alert(`還有沒作答的o，仔細檢查看看?`);
+            return;
+        }
 
-total+=Number(ans.value);
+        let value=Number(ans.value);
 
-}
+        if(REVERSE_ITEMS.includes(i)){
+            value = 5 - value;
+        }
 
-const avg=(total/questions.length).toFixed(2);
+        total += value;
 
-document.getElementById("result").style.display="block";
+    }
 
-document.getElementById("result").innerHTML=`
-<h2>
+    const avg = total / questions.length;
+    const result = getResultByAverage(avg);
 
+    document.getElementById("resultTitle").textContent = result.title;
+    document.getElementById("resultText").textContent = result.text;
+    document.getElementById("resultImage").src = result.image;
+    document.getElementById("resultImage").alt = result.title;
 
+    document.getElementById("result").style.display="block";
 
-
-
-<hr>
-
-<h3><test src="${total}.txt" alt"=></h3>
-
-<img src="a${total}.png" alt="結果圖片">
-`;
-
+    document.getElementById("result").scrollIntoView({behavior:"smooth"});
 }
 
 </script>
