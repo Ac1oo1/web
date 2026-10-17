@@ -1,9 +1,4 @@
-<!DOCTYPE html>
 
-<html lang="zh-Hant">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scal
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -42,7 +37,7 @@
             overflow: hidden;
         }
 
-        /* ===== 左側導覽選單 ===== */
+        /* ===== 電腦版左側選單 ===== */
         .sidebar {
             flex: 0 0 260px;
             width: 260px;
@@ -71,15 +66,15 @@
             padding: 13px 15px;
             color: white;
             text-decoration: none;
+            text-align: center;
             border-radius: 8px;
-            transition: background-color 0.2s ease;
             line-height: 1.5;
+            transition: background-color 0.2s ease;
         }
 
         .menu a:hover,
         .menu a:focus-visible {
             background: #5f8988;
-            outline: none;
         }
 
         .menu a:active {
@@ -99,11 +94,13 @@
             width: 100%;
             height: 100%;
             border: none;
-            background: #ffffff;
+            background: white;
         }
 
         /* ===== 平板版：601px 至 900px ===== */
-        @media screen and (min-width: 601px) and (max-width: 900px) {
+        @media screen and (min-width: 601px)
+                       and (max-width: 900px) {
+
             .sidebar {
                 flex-basis: 210px;
                 width: 210px;
@@ -115,58 +112,85 @@
             }
 
             .menu a {
-                padding: 12px 10px;
+                padding: 12px 8px;
                 font-size: 15px;
             }
         }
 
         /* ===== 手機版：600px 以下 ===== */
         @media screen and (max-width: 600px) {
+
+            /* 改為上下排列 */
             .container {
                 flex-direction: column;
             }
 
+            /* 上方導覽區符合螢幕寬度 */
             .sidebar {
                 flex: 0 0 auto;
                 width: 100%;
-                padding: 10px 12px;
-                overflow: visible;
+                padding: 10px 8px;
+                overflow: hidden;
             }
 
             .sidebar h2 {
                 margin-bottom: 10px;
-                font-size: 19px;
+                font-size: 18px;
+                text-align: center;
             }
 
-            /* 導覽選單改為橫向排列 */
+            /* 四個選單平均分配寬度 */
             .menu {
                 display: flex;
                 flex-direction: row;
-           width:100%；
-                gap:4px；
-                list-style:none；
-            overfiow:visible；
-                
+                width: 100%;
+                gap: 4px;
+                list-style: none;
+                overflow: visible;
             }
 
             .menu li {
-                flex: 0 0 auto;
+                flex: 1 1 0;
+                min-width: 0;
                 margin-bottom: 0;
             }
 
+            /* 選單文字自動調整大小 */
             .menu a {
-                padding: 10px 14px;
-                font-size: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                min-height: 44px;
+                padding: 8px 2px;
+                font-size: clamp(11px, 3.2vw, 14px);
+                line-height: 1.4;
+                text-align: center;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                word-break: keep-all;
                 border-radius: 6px;
                 background: rgba(255, 255, 255, 0.12);
             }
 
-            /* 內容區填滿剩餘高度 */
+            .menu a:hover,
+            .menu a:focus-visible {
+                background: #5f8988;
+            }
+
+            /* 下方內容填滿剩餘空間 */
             .content {
                 flex: 1 1 auto;
                 width: 100%;
                 min-width: 0;
                 min-height: 0;
+            }
+
+            .content iframe {
+                display: block;
+                width: 100%;
+                height: 100%;
+                border: none;
             }
         }
 
@@ -191,7 +215,7 @@
             <ul class="menu">
 
                 <li>
-                    <a href="index.html" target="mainFrame">
+                    <a href="home.html" target="mainFrame">
                         首頁
                     </a>
                 </li>
@@ -220,154 +244,18 @@
 
         </nav>
 
-        <!-- 右側主要內容 -->
+        <!-- 網頁主要內容 -->
         <main class="content">
 
             <iframe
                 name="mainFrame"
-                src="index.html"
+                src="home.html"
                 title="網站主要內容">
             </iframe>
 
         </main>
 
     </div>
-
-</body>
-</html>
-
-
-<title>Iframe 導覽範例</title>
-
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    height:100vh;
-    font-family:"Microsoft JhengHei",sans-serif;
-}
-
-/* 整體左右布局 */
-
-.container{
-    display:flex;
-    width:100%;
-    height:100vh;
-}
-
-/* 左側選單 */
-
-.sidebar{
-    width:260px;
-    background:#79a1a0;
-    color:white;
-    padding:20px;
-}
-
-.sidebar h2{
-    margin-bottom:20px;
-    text-align:center;
-}black
-
-.menu{
-    list-style:none;
-}
-
-.menu li{
-    margin-bottom:10px;
-}
-
-.menu a{
-    display:block;
-    padding:12px 15px;
-    text-decoration:none;
-    color:white;
-    border-radius:8px;
-    transition:.3s;
-}
-
-.menu a:hover{
-    background:#c6dede;
-}
-
-/* 右側內容 */
-
-.content{
-    flex:1;
-    background:#f4ffe6;
-}
-
-.content iframe{
-    width:100%;
-    height:100%;
-    border:none;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-```
-<!-- 左側選單 -->
-
-<div class="sidebar">
-
-    <h2>網站導覽</h2>
-
-    <ul class="menu">
-
-        <li>
-            <a href="index.html" target="mainFrame">
-                首頁
-            </a>
-        </li>
-
-        
-
-        <li>
-            <a href="b2.html" target="mainFrame">
-                特質問卷
-            </a>
-        </li>
-
-        <li>
-            <a href="https://online.fliphtml5.com/nqsff/vrba/" target="mainFrame">
-                電子書
-            </a>
-        </li>
-
-        <li>
-            <a href="b4.html" target="mainFrame">
-                周邊產品
-            </a>
-        </li>
-
-    </ul>
-
-</div>
-
-<!-- 右側 iframe -->
-
-<div class="content">
-
-    <iframe
-        name="mainFrame"
-        src="index.html">
-    </iframe>
-
-</div>
-```
-
-</div>
 
 </body>
 </html>
