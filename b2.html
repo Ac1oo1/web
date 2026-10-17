@@ -1,159 +1,139 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>你是甚麼特有種?</title>
 
 <style>
-
-body{
-    font-family:"Microsoft JhengHei",sans-serif;
-    background:#f5f5f5;
-    margin:30px;
+body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background: #f5f5f5;
+    margin: 30px;
 }
 
-.container{
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:25px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.15);
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,.15);
 }
 
-h1{
-    text-align:center;
-    color:#333;
+h1 { text-align: center; }
+
+.question {
+    margin: 20px 0;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
 }
 
-.question{
-    margin:20px 0;
-    padding:15px;
-    border-bottom:1px solid #ddd;
+.options {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.question b{
-    display:block;
-    margin-bottom:10px;
+label { cursor: pointer; }
+
+button {
+    margin-top: 25px;
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    background: #1976d2;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
-.options{
-    margin-top:10px;
+button:hover { background: #125aa0; }
+
+button:disabled {
+    background: #888;
+    cursor: wait;
 }
 
-label{
-    margin-right:18px;
-    cursor:pointer;
-    line-height:2.2;
+.result {
+    margin-top: 30px;
+    padding: 20px;
+    background: #eef7ff;
+    border-radius: 8px;
+    text-align: center;
+    display: none;
 }
 
-input[type="radio"]{
-    cursor:pointer;
+.result h2 {
+    margin: 0 0 12px;
+    font-size: 26px;
 }
 
-button{
-    margin-top:25px;
-    width:100%;
-    padding:15px;
-    font-size:18px;
-    border:none;
-    background:#1976d2;
-    color:white;
-    border-radius:8px;
-    cursor:pointer;
+.result p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #333;
+    max-width: 600px;
+    margin: 0 auto;
+    white-space: pre-line;
 }
 
-button:hover{
-    background:#125aa0;
+.result img {
+    margin-top: 20px;
+    max-width: 100%;
+    width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,.25);
 }
 
-.result{
-    margin-top:30px;
-    padding:20px;
-    background:#eef7ff;
-    border-radius:8px;
-    text-align:center;
-    display:none;
+#saveStatus {
+    margin-top: 15px;
+    text-align: center;
+    line-height: 1.7;
 }
 
-.result h2{
-    margin:0 0 8px 0;
-    font-size:26px;
+@media (max-width: 600px) {
+    body { margin: 10px; }
+    .container { padding: 15px; }
+    .options { flex-direction: column; }
 }
-
-.result .intro-title{
-    margin-top:10px;
-    margin-bottom:10px;
-    font-size:18px;
-    font-weight:bold;
-    color:#1976d2;
-}
-
-.result p{
-    font-size:16px;
-    line-height:1.6;
-    color:#333;
-    max-width:600px;
-    margin:0 auto;
-}
-
-.result img{
-    display:block;
-    margin:20px auto 0 auto;
-    max-width:100%;
-    width:500px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.25);
-}
-
 </style>
-
 </head>
 
-
 <body>
-
 <div class="container">
 
 <h1>你是甚麼特有種?</h1>
 
 <div id="survey"></div>
 
-<button onclick="calculateScore()">查看角色</button>
+<button id="submitButton" type="button" onclick="calculateScore()">
+    查看角色
+</button>
 
+<p id="saveStatus" role="status" aria-live="polite"></p>
 
 <div class="result" id="result">
-
     <h2 id="resultTitle"></h2>
-
-    <div class="intro-title">介紹</div>
-
     <p id="resultText"></p>
-
-    <img
-        id="resultImage"
-        src=""
-        alt="結果圖片"
-        onerror="this.style.display='none';"
-    >
-
+    <img id="resultImage" src="" alt="測驗結果圖片">
 </div>
 
 </div>
-
 
 <script>
+// ============================================
+// 1. 請換成你自己的 Apps Script /exec 網址
+// ============================================
+const GOOGLE_SCRIPT_URL =
+    "https://script.google.com/macros/s/AKfycby0RQ78iR6Pr4EVEWV321pb1MZ1qjNsSVddMXVmVlgbV8ZRXVXHeqDXjB1LuQ1ZXqE7/exec";
 
-
-/* =====================================================
-   題目
-   ===================================================== */
-
+// ============================================
+// 2. 測驗題目
+// ============================================
 const questions = [
 
     "比起離群索居，你更喜歡與同類互相照應",
@@ -182,20 +162,13 @@ const questions = [
 
 ];
 
-
-/* =====================================================
-   反向計分題
-   ===================================================== */
-
 const REVERSE_ITEMS = [2, 5, 7, 8, 11];
 
-
-/* =====================================================
-   結果資料
-   分數：12～48
-   圖片：與 index.html 放在同一個資料夾
-   ===================================================== */
-
+// ============================================
+// 3. 結果資料
+// 其餘結果先使用原本的預設文字，請自行補上
+// 真正的特有種名稱及介紹。
+// ============================================
 const RESULTS = {
 
     12: {
@@ -421,175 +394,172 @@ const RESULTS = {
     }
 
 };
-
-
-/* =====================================================
-   建立題目
-   ===================================================== */
-
+// ============================================
+// 4. 自動產生題目
+// ============================================
 const survey = document.getElementById("survey");
 
-let html = "";
+questions.forEach((question, index) => {
+    const section = document.createElement("div");
+    section.className = "question";
 
+    const title = document.createElement("b");
+    title.textContent = `第${index + 1}題：`;
 
-questions.forEach((q, index) => {
+    section.appendChild(title);
+    section.appendChild(
+        document.createTextNode(question)
+    );
 
-    html += `
-        <div class="question">
+    const options = document.createElement("div");
+    options.className = "options";
 
-            <b>第${index + 1}題：</b>
+    const optionTexts = [
+        "不同意",
+        "有點不同意",
+        "有點同意",
+        "同意"
+    ];
 
-            ${q}
+    optionTexts.forEach((text, i) => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
 
-            <div class="options">
-    `;
+        input.type = "radio";
+        input.name = `q${index}`;
+        input.value = String(i + 1);
 
+        label.appendChild(input);
+        label.appendChild(
+            document.createTextNode(` ${i + 1} ${text}`)
+        );
 
-    for(let i = 1; i <= 4; i++){
+        options.appendChild(label);
+    });
 
-        let text = "";
-
-        switch(i){
-
-            case 1:
-                text = "不同意";
-                break;
-
-            case 2:
-                text = "有點不同意";
-                break;
-
-            case 3:
-                text = "有點同意";
-                break;
-
-            case 4:
-                text = "同意";
-                break;
-
-        }
-
-
-        html += `
-            <label>
-
-                <input
-                    type="radio"
-                    name="q${index}"
-                    value="${i}"
-                >
-
-                ${i} ${text}
-
-            </label>
-        `;
-
-    }
-
-
-    html += `
-            </div>
-
-        </div>
-    `;
-
+    section.appendChild(options);
+    survey.appendChild(section);
 });
 
+// ============================================
+// 5. 計算分數、顯示結果、傳送紀錄
+// ============================================
+let submitted = false;
 
-survey.innerHTML = html;
-
-
-/* =====================================================
-   計算分數
-   ===================================================== */
-
-function calculateScore(){
+async function calculateScore() {
+    if (submitted) {
+        alert("這份測驗已經提交，請勿重複提交。");
+        return;
+    }
 
     let total = 0;
+    const answers = [];
 
-
-    for(let i = 0; i < questions.length; i++){
-
-        const ans = document.querySelector(
+    for (let i = 0; i < questions.length; i++) {
+        const answer = document.querySelector(
             `input[name="q${i}"]:checked`
         );
 
+        if (!answer) {
+            alert(`第${i + 1}題尚未作答，請完成所有題目！`);
 
-        if(!ans){
-
-            alert("還有沒作答的o，仔細檢查看看?");
+            document.querySelector(
+                `.question:nth-child(${i + 1})`
+            ).scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
 
             return;
-
         }
 
+        const selected = Number(answer.value);
+        answers.push(selected);
 
-        let value = Number(ans.value);
-
-
-        /* 反向計分 */
-
-        if(REVERSE_ITEMS.includes(i)){
-
-            value = 5 - value;
-
-        }
-
+        const value = REVERSE_ITEMS.includes(i)
+            ? 5 - selected
+            : selected;
 
         total += value;
-
     }
-
-
-    /* 取得結果 */
 
     const result = RESULTS[total];
 
-
-    if(!result){
-
-        alert("找不到這個分數的結果：" + total);
-
+    if (!result) {
+        alert("找不到對應的結果，請檢查程式設定。");
         return;
-
     }
 
-
-    /* 顯示結果 */
-
+    // 顯示結果，不顯示分數
     document.getElementById("resultTitle").textContent =
         result.title;
-
 
     document.getElementById("resultText").textContent =
         result.text;
 
+    const image = document.getElementById("resultImage");
+    image.src = result.image;
+    image.alt = result.title;
 
-    const resultImage =
-        document.getElementById("resultImage");
-
-
-    resultImage.style.display = "block";
-
-    resultImage.src = result.image;
-
-    resultImage.alt = result.title;
-
-
-    document.getElementById("result").style.display =
-        "block";
-
-
-    /* 自動捲到結果 */
-
+    document.getElementById("result").style.display = "block";
     document.getElementById("result").scrollIntoView({
-        behavior:"smooth"
+        behavior: "smooth"
     });
 
+    // 檢查網址是否已經設定
+    if (
+        !GOOGLE_SCRIPT_URL.startsWith(
+            "https://script.google.com/macros/s/"
+        ) ||
+        !GOOGLE_SCRIPT_URL.endsWith("/exec")
+    ) {
+        document.getElementById("saveStatus").textContent =
+            "測驗結果已顯示，但尚未設定正確的 Google Apps Script 網址。";
+
+        return;
+    }
+
+    const button = document.getElementById("submitButton");
+    const status = document.getElementById("saveStatus");
+
+    button.disabled = true;
+    button.textContent = "正在提交資料…";
+    status.textContent = "正在傳送作答紀錄，請稍候。";
+
+    try {
+        const formData = new URLSearchParams();
+
+        formData.append("data", JSON.stringify({
+            answers: answers,
+            score: total,
+            result: result.title
+        }));
+
+        // no-cors 模式不能讀取伺服器回應。
+        // 因此 fetch 完成不代表試算表一定已寫入。
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: formData
+        });
+
+        submitted = true;
+
+        status.textContent =
+            "資料已送出。請管理者確認 Google 試算表是否新增紀錄。";
+
+        button.textContent = "已提交";
+
+    } catch (error) {
+        console.error("提交失敗：", error);
+
+        status.textContent =
+            "傳送失敗，請檢查網路、部署網址及 Apps Script 設定。";
+
+        button.disabled = false;
+        button.textContent = "重新提交";
+    }
 }
-
 </script>
-
 </body>
-
 </html>
