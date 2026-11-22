@@ -1,0 +1,680 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Lrikulau Character Showcase</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+/* =========================
+   Body
+========================= */
+
+body{
+    font-family:"Noto Sans TC",sans-serif;
+    color:#4b3d32;
+
+    /* 整個網頁使用 logo.jpg 作為背景圖 */
+    background-image:url("logo.jpg");
+    background-size:cover;
+    background-position:center center;
+    background-repeat:no-repeat;
+    background-attachment:fixed;
+
+    overflow-x:hidden;
+}
+
+
+/* =========================
+   Header
+========================= */
+
+header{
+    width:100%;
+    padding:40px 5%;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:10;
+}
+
+.logo{
+    font-size:2rem;
+    letter-spacing:6px;
+    font-weight:bold;
+    color:#8a6a50;
+}
+
+
+/* =========================
+   Hero Section
+========================= */
+
+.character-slider-section{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    padding:120px 5% 80px;
+
+    /*
+       原本的米色漸層已移除，
+       讓 body 的 logo.jpg 可以直接顯示
+    */
+    background:transparent;
+}
+
+.slider-container{
+    width:100%;
+    max-width:1400px;
+    margin:auto;
+
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:60px;
+    align-items:center;
+}
+
+
+/* =========================
+   Character Info
+========================= */
+
+.character-info{
+    animation:fadeUp 1s ease;
+
+    /*
+       左側保留半透明白色，
+       方便在 logo.jpg 背景上閱讀文字
+    */
+    background:rgba(255,255,255,0.82);
+
+    border-radius:25px;
+
+    padding:35px;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,0.12);
+
+    backdrop-filter:blur(5px);
+}
+
+.tag{
+    display:inline-block;
+    padding:8px 18px;
+    border-radius:999px;
+    background:#7d9d9b;
+    color:white;
+    font-size:0.9rem;
+    margin-bottom:20px;
+}
+
+.character-info h1{
+    font-size:4rem;
+    line-height:1.1;
+    margin-bottom:25px;
+    color:#5a4737;
+}
+
+.description{
+    line-height:2;
+    color:#6f655d;
+    margin-bottom:30px;
+}
+
+.info-box{
+    background:rgba(255,255,255,0.9);
+    border-radius:20px;
+    padding:20px;
+    margin-bottom:20px;
+
+    box-shadow:
+    0 10px 25px rgba(0,0,0,0.08);
+}
+
+.info-box h3{
+    margin-bottom:10px;
+    color:#7a5d48;
+}
+
+.info-box p{
+    line-height:1.8;
+}
+
+
+/* =========================
+   Slider
+========================= */
+
+.slider-wrapper{
+    position:relative;
+    animation:fadeIn 1.2s ease;
+}
+
+.slider{
+    width:100%;
+    height:760px;
+
+    position:relative;
+    overflow:hidden;
+
+    border-radius:30px;
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,0.15);
+}
+
+.slide{
+    position:absolute;
+    width:100%;
+    height:100%;
+
+    opacity:0;
+    transition:1s ease;
+}
+
+.slide.active{
+    opacity:1;
+    z-index:1;
+}
+
+.slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+
+/* =========================
+   Navigation
+========================= */
+
+.nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+
+    width:58px;
+    height:58px;
+
+    border:none;
+    border-radius:50%;
+
+    cursor:pointer;
+
+    font-size:1.5rem;
+
+    background:rgba(255,255,255,0.8);
+
+    backdrop-filter:blur(6px);
+
+    transition:0.3s;
+    z-index:20;
+}
+
+.nav:hover{
+    background:white;
+    transform:
+    translateY(-50%)
+    scale(1.08);
+}
+
+.prev{
+    left:20px;
+}
+
+.next{
+    right:20px;
+}
+
+
+/* =========================
+   Dots
+========================= */
+
+.dots{
+    position:absolute;
+
+    bottom:25px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    display:flex;
+    gap:12px;
+
+    z-index:20;
+}
+
+.dot{
+    width:14px;
+    height:14px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,0.5);
+
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.dot.active{
+    background:white;
+    transform:scale(1.25);
+}
+
+
+/* =========================
+   Gallery
+========================= */
+
+.gallery{
+    padding:100px 5%;
+}
+
+.section-title{
+    text-align:center;
+    font-size:3rem;
+    margin-bottom:60px;
+    color:#6a5140;
+}
+
+.gallery-grid{
+    max-width:1300px;
+    margin:auto;
+
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fit,minmax(300px,1fr));
+
+    gap:30px;
+}
+
+.card{
+    background:white;
+    border-radius:24px;
+    overflow:hidden;
+
+    box-shadow:
+    0 10px 25px rgba(0,0,0,0.08);
+
+    transition:0.4s;
+}
+
+.card:hover{
+    transform:
+    translateY(-10px);
+}
+
+.card img{
+    width:100%;
+    height:300px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:25px;
+}
+
+.card-content h3{
+    margin-bottom:12px;
+    color:#6a5140;
+}
+
+
+/* =========================
+   Footer
+========================= */
+
+footer{
+    padding:40px;
+    text-align:center;
+
+    background:#8a6a50;
+    color:white;
+}
+
+
+/* =========================
+   Animation
+========================= */
+
+@keyframes fadeUp{
+
+    from{
+        opacity:0;
+        transform:translateY(40px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+    }
+
+    to{
+        opacity:1;
+    }
+}
+
+
+/* =========================
+   Responsive
+========================= */
+
+@media(max-width:980px){
+
+    .slider-container{
+        grid-template-columns:1fr;
+    }
+
+    .character-info h1{
+        font-size:3rem;
+    }
+
+    .slider{
+        height:520px;
+    }
+}
+
+
+@media(max-width:640px){
+
+    body{
+        background-attachment:scroll;
+        background-position:center top;
+    }
+
+    .character-info{
+        padding:25px;
+    }
+
+    .character-info h1{
+        font-size:2.3rem;
+    }
+
+    .slider{
+        height:420px;
+    }
+
+    .section-title{
+        font-size:2.2rem;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     Header
+========================= -->
+
+<header>
+
+</header>
+
+
+<!-- =========================
+     Hero
+========================= -->
+
+<section class="character-slider-section">
+
+    <div class="slider-container">
+
+
+        <!-- Left Info -->
+
+        <div class="character-info">
+
+            <span class="tag">
+               主題名稱
+            </span>
+
+            <h1>
+                特有萌典
+            </h1>
+
+            <p class="description">
+            </p>
+
+
+            <div class="info-box">
+
+                <h3>
+                    產品特徵
+                </h3>
+
+                <p>
+                    相較於以往書面畫形式,電子書攜帶較方便及隨時皆可閱讀，且不占用空間。
+                </p>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <h3>
+                    產品設定
+                </h3>
+
+                <p>
+                    以漫畫形式介紹特有種習性與生活環境之電子書。
+                </p>
+
+            </div>
+
+
+            <div class="info-box">
+
+                <h3>
+                    產品定位
+                </h3>
+
+                <p>
+                    本電子書主旨為讓大眾在閱讀漫畫時可學習本土特有中之知識,以打破科普書皆為嚴肅之事的形象。
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Right Slider -->
+
+        <div class="slider-wrapper">
+
+            <div class="slider">
+
+
+                <!-- 第一張圖片 -->
+
+                <div class="slide active">
+
+                    <img
+                        src="0.png"
+                        alt=""
+                    >
+
+                </div>
+
+
+                <!-- 第二張圖片 -->
+
+                <div class="slide">
+
+                    <img
+                        src="images/1.png"
+                        alt=""
+                    >
+
+                </div>
+
+
+                <!-- 第三張圖片 -->
+
+                <div class="slide">
+
+                    <img
+                        src="2.png"
+                        alt=""
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Previous -->
+
+            <button
+                class="nav prev"
+                onclick="changeSlide(-1)"
+            >
+                ❮
+            </button>
+
+
+            <!-- Next -->
+
+            <button
+                class="nav next"
+                onclick="changeSlide(1)"
+            >
+                ❯
+            </button>
+
+
+            <!-- Dots -->
+
+            <div class="dots">
+
+                <span
+                    class="dot active"
+                    onclick="currentSlide(0)">
+                </span>
+
+                <span
+                    class="dot"
+                    onclick="currentSlide(1)">
+                </span>
+
+                <span
+                    class="dot"
+                    onclick="currentSlide(2)">
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<script>
+
+/* =========================
+   Slider
+========================= */
+
+let slideIndex = 0;
+
+const slides =
+    document.querySelectorAll(".slide");
+
+const dots =
+    document.querySelectorAll(".dot");
+
+
+function showSlide(index){
+
+    if(index >= slides.length){
+        slideIndex = 0;
+    }
+
+    else if(index < 0){
+        slideIndex = slides.length - 1;
+    }
+
+    else{
+        slideIndex = index;
+    }
+
+
+    slides.forEach(function(slide){
+
+        slide.classList.remove("active");
+
+    });
+
+
+    dots.forEach(function(dot){
+
+        dot.classList.remove("active");
+
+    });
+
+
+    slides[slideIndex]
+        .classList.add("active");
+
+    dots[slideIndex]
+        .classList.add("active");
+}
+
+
+/* 左右切換 */
+
+function changeSlide(direction){
+
+    showSlide(slideIndex + direction);
+
+}
+
+
+/* 點擊圓點 */
+
+function currentSlide(index){
+
+    showSlide(index);
+
+}
+
+
+/* 自動輪播 */
+
+setInterval(function(){
+
+    changeSlide(1);
+
+},5000);
+
+</script>
+
+
+</body>
+</html>
+```
